@@ -4,6 +4,8 @@ import pandas as pd
 # ---------------------------
 # CONFIGURACIÓN DE LA PÁGINA
 # ---------------------------
+st.sidebar.title("IP Intelligence Tool") 
+st.sidebar.markdown("Prototype - Fraud Detection")
 st.set_page_config(page_title="IP Report", layout="wide")
 
 st.title("IP Report")
