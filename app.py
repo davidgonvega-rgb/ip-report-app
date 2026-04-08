@@ -12,6 +12,15 @@ st.set_page_config(page_title="IP Report", layout="wide")
 if "selected_ip" not in st.session_state:
     st.session_state.selected_ip = None
 
+if "search_executed" not in st.session_state:
+    st.session_state.search_executed = False
+
+if "filtered_related_ips" not in st.session_state:
+    st.session_state.filtered_related_ips = pd.DataFrame()
+
+if "filtered_login_ips" not in st.session_state:
+    st.session_state.filtered_login_ips = pd.DataFrame()
+
 if "last_search_type" not in st.session_state:
     st.session_state.last_search_type = "IP"
 
@@ -85,7 +94,7 @@ related_accounts_detail = {
 }
 
 # ---------------------------
-# IP SUMMARY GENERADA AUTOMÁTICAMENTE
+# RESUMEN DE IPS RELACIONADOS
 # ---------------------------
 ip_last_login_map = {
     "563.123.256.32": "1/17/2025 01:26PM",
@@ -106,7 +115,7 @@ for ip, df in related_accounts_detail.items():
         "IP Address": ip,
         "Related Accounts": len(df),
         "Last Login": ip_last_login_map.get(ip, "N/A"),
-        "Has Risk Account": df["Risk Account"].any()
+        "Has Risk Account": bool(df["Risk Account"].any())
     })
 
 related_ips_data = pd.DataFrame(related_ips_rows).sort_values("IP Address").reset_index(drop=True)
@@ -154,16 +163,13 @@ login_ips_data = pd.DataFrame({
 })
 
 # ---------------------------
-# RELACIÓN CUENTA -> IP
+# RELACIÓN CUENTA -> IPS
 # ---------------------------
 account_to_ips = {}
 for ip, df in related_accounts_detail.items():
     for account in df["Account"].tolist():
-        if account not in account_to_ips:
-            account_to_ips[account] = []
-        account_to_ips[account].append(ip)
+        account_to_ips.setdefault(account, []).append(ip)
 
-# Agregamos algunos IPs sin relación a ciertas cuentas para la demo
 account_to_ips["A10234"] = account_to_ips.get("A10234", []) + ["563.230.092.21"]
 account_to_ips["A20456"] = account_to_ips.get("A20456", []) + ["563.230.092.22"]
 account_to_ips["A40023"] = account_to_ips.get("A40023", []) + ["563.230.092.41"]
@@ -179,26 +185,26 @@ def add_row_numbers(df):
     return df
 
 def highlight_risk_row(row):
-    if row["Risk Account"] is True:
+    if row["Risk Account"] == True:
         return ['background-color: #f8d7da'] * len(row)
     return [''] * len(row)
 
-def row_style_html(is_risk_related: bool) -> str:
-    if is_risk_related:
+def box_style(is_risk: bool) -> str:
+    if is_risk:
         return "background-color:#f8d7da; padding:8px; border-radius:4px;"
-    return "background-color:#ffffff; padding:8px; border-radius:4px;"
+    return "background-color:#ffffff; padding:8px; border-radius:4px; border:1px solid #eee;"
 
 # ---------------------------
 # PANTALLA DE DETALLE
 # ---------------------------
-if st.session_state.selected_ip:
+if st.session_state.selected_ip is not None:
     selected_ip = st.session_state.selected_ip
     st.title("IP Detail")
+    st.subheader(f"Linked Accounts for IP: {selected_ip}")
 
-    st.markdown(f"### Selected IP: {selected_ip}")
+    detail_df = related_accounts_detail.get(selected_ip)
 
-    if selected_ip in related_accounts_detail:
-        detail_df = related_accounts_detail[selected_ip].copy()
+    if detail_df is not None and not detail_df.empty:
         total_accounts = len(detail_df)
         total_risk_accounts = int(detail_df["Risk Account"].sum())
 
@@ -208,36 +214,34 @@ if st.session_state.selected_ip:
         with c2:
             st.metric("Risk Accounts", total_risk_accounts)
 
-        st.markdown("### Linked Accounts")
+        st.markdown("### Linked Accounts Detail")
 
         detail_df = add_row_numbers(detail_df)
         styled_detail_df = detail_df.style.apply(highlight_risk_row, axis=1)
         st.dataframe(styled_detail_df, use_container_width=True)
 
-        st.caption("Rows highlighted in red indicate risk accounts.")
-
+        st.caption("Accounts highlighted in red are risk accounts.")
     else:
-        st.warning("No related account detail found for this IP.")
+        st.warning("No linked accounts found for this IP.")
 
-    if st.button("Back to Search"):
+    if st.button("Back to Search", key="back_to_search"):
         st.session_state.selected_ip = None
         st.rerun()
 
 # ---------------------------
-# PANTALLA PRINCIPAL DE BÚSQUEDA
+# PANTALLA PRINCIPAL
 # ---------------------------
 else:
     st.title("IP Report")
-
     st.subheader("Search by Account or IP")
 
-    default_search_type = 0 if st.session_state.last_search_type == "IP" else 1
+    default_index = 0 if st.session_state.last_search_type == "IP" else 1
 
     search_type = st.radio(
         "Search Type",
         ["IP", "Account"],
         horizontal=True,
-        index=default_search_type
+        index=default_index
     )
 
     search_input = st.text_input(
@@ -246,13 +250,11 @@ else:
         placeholder="Example: 563.123.256.33 or A10234"
     )
 
-    search_button = st.button("Search")
-
-    if search_button:
+    if st.button("Search"):
         st.session_state.last_search_type = search_type
         st.session_state.last_search_input = search_input
+        st.session_state.search_executed = True
 
-    if search_button:
         filtered_related_ips = related_ips_data.copy()
         filtered_login_ips = login_ips_data.copy()
 
@@ -266,7 +268,6 @@ else:
                 ]
             else:
                 matched_ips = account_to_ips.get(search_input.strip().upper(), [])
-
                 if matched_ips:
                     related_ip_matches = [ip for ip in matched_ips if ip in related_ips_data["IP Address"].tolist()]
                     login_ip_matches = [ip for ip in matched_ips if ip in login_ips_data["IP"].tolist()]
@@ -281,28 +282,26 @@ else:
                     filtered_related_ips = related_ips_data.iloc[0:0]
                     filtered_login_ips = login_ips_data.iloc[0:0]
 
-        # ---------------------------
-        # SUMMARY
-        # ---------------------------
+        st.session_state.filtered_related_ips = filtered_related_ips
+        st.session_state.filtered_login_ips = filtered_login_ips
+
+    if st.session_state.search_executed:
+        filtered_related_ips = st.session_state.filtered_related_ips
+        filtered_login_ips = st.session_state.filtered_login_ips
+
         total_ips = len(filtered_related_ips) + len(filtered_login_ips)
         related_ips_count = len(filtered_related_ips)
         risk_related_ips_count = int(filtered_related_ips["Has Risk Account"].sum()) if not filtered_related_ips.empty else 0
 
         st.markdown("## Summary")
         s1, s2, s3 = st.columns(3)
-
         with s1:
             st.metric("Total IPs", total_ips)
-
         with s2:
             st.metric("IPs with Relationships", related_ips_count)
-
         with s3:
             st.metric("IPs with Risk Accounts", risk_related_ips_count)
 
-        # ---------------------------
-        # IPS WITH RELATED ACCOUNTS
-        # ---------------------------
         st.markdown("## IPs with Related Accounts")
 
         if not filtered_related_ips.empty:
@@ -318,27 +317,22 @@ else:
             for idx, row in display_df.iterrows():
                 row_cols = st.columns([1, 3, 2, 3, 2])
 
-                style = row_style_html(bool(row["Has Risk Account"]))
+                style = box_style(bool(row["Has Risk Account"]))
 
                 row_cols[0].markdown(f"<div style='{style}'>{idx}</div>", unsafe_allow_html=True)
                 row_cols[1].markdown(f"<div style='{style}'>{row['IP Address']}</div>", unsafe_allow_html=True)
                 row_cols[2].markdown(f"<div style='{style}'>{row['Related Accounts']}</div>", unsafe_allow_html=True)
                 row_cols[3].markdown(f"<div style='{style}'>{row['Last Login']}</div>", unsafe_allow_html=True)
 
-                button_key = f"view_more_{row['IP Address']}"
-                if row_cols[4].button("View More", key=button_key):
+                if row_cols[4].button("View More", key=f"view_{row['IP Address']}"):
                     st.session_state.selected_ip = row["IP Address"]
                     st.rerun()
         else:
             st.warning("No related IPs found.")
 
-        # ---------------------------
-        # LOGIN IPS WITHOUT RELATIONSHIPS
-        # ---------------------------
         st.markdown("### Login IPs without Relationships")
 
         if not filtered_login_ips.empty:
-            filtered_login_ips = add_row_numbers(filtered_login_ips)
-            st.dataframe(filtered_login_ips, use_container_width=True)
+            st.dataframe(add_row_numbers(filtered_login_ips), use_container_width=True)
         else:
             st.warning("No login IPs found.")
