@@ -36,55 +36,173 @@ search_button = st.button("Search")
 # DATA MOCK (SIMULADA)
 # ---------------------------
 related_ips_data = pd.DataFrame({
-    "IP Address": ["563.123.256.32", "563.123.256.33", "563.123.256.34", "563.123.256.35"],
-    "Related Accounts": [3, 3, 2, 1],
-    "Last Login": ["1/17/2025 01:26PM", "1/10/2026 02:35PM", "1/17/2020 05:11PM", "1/17/2020 01:05PM"]
+    "IP Address": [
+        "563.123.256.32",
+        "563.123.256.33",
+        "563.123.256.34",
+        "563.123.256.35",
+        "563.123.256.36",
+        "563.123.256.37",
+        "563.123.256.38",
+        "563.123.256.39",
+        "563.123.256.40",
+        "563.123.256.41"
+    ],
+    "Related Accounts": [4, 5, 3, 2, 1, 4, 2, 3, 1, 6],
+    "Last Login": [
+        "1/17/2025 01:26PM",
+        "1/10/2026 02:35PM",
+        "1/17/2020 05:11PM",
+        "1/17/2020 01:05PM",
+        "2/11/2025 09:10AM",
+        "3/05/2026 10:22PM",
+        "4/14/2025 11:43AM",
+        "5/19/2025 08:17PM",
+        "6/02/2025 03:09PM",
+        "7/21/2025 07:50AM"
+    ]
 })
 
 login_ips_data = pd.DataFrame({
-    "IP": ["563.230.092.21", "563.230.092.22", "563.230.092.02", "563.230.092.02", "563.230.092.35"],
-    "Last Login": ["1/17/2020 01:28PM", "1/16/2020 08:12PM", "3/02/2020 12:03AM", "3/4/2018 10:40PM", "1/11/2016 01:01AM"],
-    "Location": ["San José, Costa Rica"] * 5
+    "IP": [
+        "563.230.092.21",
+        "563.230.092.22",
+        "563.230.092.02",
+        "563.230.092.35",
+        "563.230.092.41",
+        "563.230.092.55",
+        "563.230.092.60",
+        "563.230.092.71",
+        "563.123.256.32",
+        "563.123.256.33",
+        "563.123.256.36",
+        "563.123.256.41"
+    ],
+    "Last Login": [
+        "1/17/2020 01:28PM",
+        "1/16/2020 08:12PM",
+        "3/02/2020 12:03AM",
+        "1/11/2016 01:01AM",
+        "2/14/2025 09:50AM",
+        "3/08/2025 11:22PM",
+        "4/10/2025 05:15PM",
+        "5/01/2025 02:18AM",
+        "7/02/2025 10:40AM",
+        "7/03/2025 11:20AM",
+        "7/04/2025 08:55PM",
+        "7/05/2025 07:30AM"
+    ],
+    "Location": [
+        "San José, Costa Rica",
+        "San José, Costa Rica",
+        "Alajuela, Costa Rica",
+        "Heredia, Costa Rica",
+        "Lima, Perú",
+        "Ciudad de México, México",
+        "Guatemala City, Guatemala",
+        "Panamá City, Panamá",
+        "San José, Costa Rica",
+        "Lima, Perú",
+        "Ciudad de México, México",
+        "Quito, Ecuador"
+    ]
 })
 
-# Cuentas relacionadas por IP para el detalle
 related_accounts_detail = {
     "563.123.256.32": pd.DataFrame({
-        "Account": ["A10234", "A20456", "A30567"],
-        "Customer": ["Carlos M.", "Luis P.", "Mario G."],
-        "Country": ["Costa Rica", "Perú", "Costa Rica"],
-        "Risk Account": [False, True, False]
+        "Account": ["A10234", "A20456", "A30567", "A40678"],
+        "Customer": ["Carlos M.", "Luis P.", "Mario G.", "Andrea T."],
+        "Country": ["Costa Rica", "Perú", "Costa Rica", "Guatemala"],
+        "Risk Account": [False, True, False, False]
     }),
     "563.123.256.33": pd.DataFrame({
-        "Account": ["A40021", "A40022", "A40023"],
-        "Customer": ["Ana R.", "Sofía T.", "Daniel V."],
-        "Country": ["México", "Costa Rica", "Guatemala"],
-        "Risk Account": [False, False, True]
+        "Account": ["A40021", "A40022", "A40023", "A40024", "A40025"],
+        "Customer": ["Ana R.", "Sofía T.", "Daniel V.", "Pedro L.", "Melissa C."],
+        "Country": ["México", "Costa Rica", "Guatemala", "Perú", "Panamá"],
+        "Risk Account": [False, False, True, False, False]
     }),
     "563.123.256.34": pd.DataFrame({
-        "Account": ["A51001", "A51002"],
-        "Customer": ["Pedro L.", "María C."],
-        "Country": ["Perú", "Costa Rica"],
-        "Risk Account": [False, True]
+        "Account": ["A51001", "A51002", "A51003"],
+        "Customer": ["Pedro L.", "María C.", "Javier F."],
+        "Country": ["Perú", "Costa Rica", "México"],
+        "Risk Account": [False, True, False]
     }),
     "563.123.256.35": pd.DataFrame({
-        "Account": ["A70001"],
-        "Customer": ["Elena S."],
+        "Account": ["A70001", "A70002"],
+        "Customer": ["Elena S.", "Roberto N."],
+        "Country": ["Costa Rica", "Costa Rica"],
+        "Risk Account": [False, True]
+    }),
+    "563.123.256.36": pd.DataFrame({
+        "Account": ["A80011", "A80012", "A80013", "A80014"],
+        "Customer": ["Laura G.", "Esteban R.", "Paula M.", "José A."],
+        "Country": ["México", "México", "Costa Rica", "Perú"],
+        "Risk Account": [False, False, True, False]
+    }),
+    "563.123.256.37": pd.DataFrame({
+        "Account": ["A90021", "A90022"],
+        "Customer": ["Kevin B.", "Lucía P."],
+        "Country": ["Guatemala", "Guatemala"],
+        "Risk Account": [False, False]
+    }),
+    "563.123.256.38": pd.DataFrame({
+        "Account": ["A91001", "A91002", "A91003"],
+        "Customer": ["Mauricio C.", "Gloria V.", "Andrés S."],
+        "Country": ["Panamá", "Costa Rica", "Ecuador"],
+        "Risk Account": [False, True, False]
+    }),
+    "563.123.256.39": pd.DataFrame({
+        "Account": ["A92001"],
+        "Customer": ["Silvia H."],
         "Country": ["Costa Rica"],
         "Risk Account": [False]
+    }),
+    "563.123.256.40": pd.DataFrame({
+        "Account": ["A93001"],
+        "Customer": ["Fernando D."],
+        "Country": ["Perú"],
+        "Risk Account": [False]
+    }),
+    "563.123.256.41": pd.DataFrame({
+        "Account": ["A94001", "A94002", "A94003", "A94004", "A94005", "A94006"],
+        "Customer": ["Rosa M.", "Diego P.", "Camila R.", "Bryan T.", "Natalia S.", "Iván L."],
+        "Country": ["Ecuador", "México", "Costa Rica", "Panamá", "Perú", "Guatemala"],
+        "Risk Account": [False, False, True, False, False, False]
     })
 }
 
-# Relación cuenta → IPs simulada
 account_to_ips = {
     "A10234": ["563.123.256.32", "563.230.092.21"],
     "A20456": ["563.123.256.32", "563.230.092.22"],
+    "A30567": ["563.123.256.32"],
+    "A40678": ["563.123.256.32"],
     "A40021": ["563.123.256.33"],
     "A40022": ["563.123.256.33"],
     "A40023": ["563.123.256.33"],
+    "A40024": ["563.123.256.33"],
+    "A40025": ["563.123.256.33"],
     "A51001": ["563.123.256.34"],
     "A51002": ["563.123.256.34"],
-    "A70001": ["563.123.256.35"]
+    "A51003": ["563.123.256.34"],
+    "A70001": ["563.123.256.35"],
+    "A70002": ["563.123.256.35"],
+    "A80011": ["563.123.256.36"],
+    "A80012": ["563.123.256.36"],
+    "A80013": ["563.123.256.36"],
+    "A80014": ["563.123.256.36"],
+    "A90021": ["563.123.256.37"],
+    "A90022": ["563.123.256.37"],
+    "A91001": ["563.123.256.38"],
+    "A91002": ["563.123.256.38"],
+    "A91003": ["563.123.256.38"],
+    "A92001": ["563.123.256.39"],
+    "A93001": ["563.123.256.40"],
+    "A94001": ["563.123.256.41"],
+    "A94002": ["563.123.256.41"],
+    "A94003": ["563.123.256.41"],
+    "A94004": ["563.123.256.41"],
+    "A94005": ["563.123.256.41"],
+    "A94006": ["563.123.256.41"]
 }
 
 # ---------------------------
@@ -96,7 +214,7 @@ def highlight_rows(row):
     return [''] * len(row)
 
 def highlight_risk_account(row):
-    if row["Risk Account"] is True:
+    if row["Risk Account"] == True:
         return ['background-color: #f8d7da'] * len(row)
     return [''] * len(row)
 
@@ -104,13 +222,6 @@ def add_row_numbers(df):
     df = df.copy()
     df.index = range(1, len(df) + 1)
     return df
-
-# ---------------------------
-# MANEJO DE QUERY PARAMS PARA VIEW MORE
-# ---------------------------
-query_params = st.query_params
-if "ip" in query_params:
-    st.session_state.selected_ip = query_params["ip"]
 
 # ---------------------------
 # RESULTADOS
@@ -143,20 +254,42 @@ if search_button:
     st.markdown("## IPs with Related Accounts")
 
     if not filtered_related_ips.empty:
-        display_df = filtered_related_ips.copy()
+        display_df = add_row_numbers(filtered_related_ips)
 
-        display_df["Details"] = display_df["IP Address"].apply(
-            lambda ip: f"[View More](?ip={ip})"
-        )
+        header_cols = st.columns([1, 3, 2, 3, 2])
+        header_cols[0].markdown("**#**")
+        header_cols[1].markdown("**IP Address**")
+        header_cols[2].markdown("**Related Accounts**")
+        header_cols[3].markdown("**Last Login**")
+        header_cols[4].markdown("**Details**")
 
-        display_df = add_row_numbers(display_df)
+        for idx, row in display_df.iterrows():
+            row_cols = st.columns([1, 3, 2, 3, 2])
 
-        styled_df = display_df.style.apply(highlight_rows, axis=1)
-        st.dataframe(styled_df, use_container_width=True)
+            is_risk_ip = row["Related Accounts"] >= 2
+            bg_color = "#f8d7da" if is_risk_ip else "#ffffff"
 
-        st.markdown("### Interactive Links")
-        for _, row in filtered_related_ips.iterrows():
-            st.markdown(f'**{row["IP Address"]}** — [View More](?ip={row["IP Address"]})')
+            row_cols[0].markdown(
+                f"<div style='background-color:{bg_color}; padding:8px; border-radius:4px;'>{idx}</div>",
+                unsafe_allow_html=True
+            )
+            row_cols[1].markdown(
+                f"<div style='background-color:{bg_color}; padding:8px; border-radius:4px;'>{row['IP Address']}</div>",
+                unsafe_allow_html=True
+            )
+            row_cols[2].markdown(
+                f"<div style='background-color:{bg_color}; padding:8px; border-radius:4px;'>{row['Related Accounts']}</div>",
+                unsafe_allow_html=True
+            )
+            row_cols[3].markdown(
+                f"<div style='background-color:{bg_color}; padding:8px; border-radius:4px;'>{row['Last Login']}</div>",
+                unsafe_allow_html=True
+            )
+
+            button_key = f"view_more_{row['IP Address']}"
+            if row_cols[4].button("View More", key=button_key):
+                st.session_state.selected_ip = row["IP Address"]
+
     else:
         st.warning("No related IPs found.")
 
@@ -188,7 +321,6 @@ if st.session_state.selected_ip:
 
         if st.button("Close Detail"):
             st.session_state.selected_ip = None
-            st.query_params.clear()
             st.rerun()
     else:
         st.warning("No related account detail found for this IP.")
