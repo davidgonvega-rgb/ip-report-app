@@ -21,6 +21,9 @@ if "filtered_related_ips" not in st.session_state:
 if "filtered_login_ips" not in st.session_state:
     st.session_state.filtered_login_ips = pd.DataFrame()
 
+if "filtered_signup_accounts" not in st.session_state:
+    st.session_state.filtered_signup_accounts = pd.DataFrame()
+
 if "last_search_type" not in st.session_state:
     st.session_state.last_search_type = "IP"
 
@@ -92,6 +95,40 @@ related_accounts_detail = {
         "Risk Account": [False, False, True, False, False, False]
     })
 }
+
+# ---------------------------
+# SIGNUP IP ACCOUNTS
+# ---------------------------
+signup_ip_accounts = pd.DataFrame({
+    "Account": [
+        "A10234", "A20456", "A40023", "A51002", "A70002",
+        "A80013", "A91002", "A93003", "A94003", "A94005"
+    ],
+    "Customer": [
+        "Carlos M.", "Luis P.", "Daniel V.", "María C.", "Roberto N.",
+        "Paula M.", "Gloria V.", "Paola N.", "Camila R.", "Natalia S."
+    ],
+    "Signup IP": [
+        "563.123.256.32",
+        "563.123.256.32",
+        "563.123.256.33",
+        "563.123.256.34",
+        "563.123.256.35",
+        "563.123.256.36",
+        "563.123.256.38",
+        "563.123.256.40",
+        "563.123.256.41",
+        "563.123.256.41"
+    ],
+    "Country": [
+        "Costa Rica", "Perú", "Guatemala", "Costa Rica", "Costa Rica",
+        "Costa Rica", "Costa Rica", "Costa Rica", "Costa Rica", "Perú"
+    ],
+    "Risk Account": [
+        False, True, True, True, True,
+        True, True, True, True, False
+    ]
+})
 
 # ---------------------------
 # RESUMEN DE IPS RELACIONADOS
@@ -215,7 +252,6 @@ if st.session_state.selected_ip is not None:
             st.metric("Risk Accounts", total_risk_accounts)
 
         st.markdown("### Linked Accounts Detail")
-
         detail_df = add_row_numbers(detail_df)
         styled_detail_df = detail_df.style.apply(highlight_risk_row, axis=1)
         st.dataframe(styled_detail_df, use_container_width=True)
@@ -257,6 +293,7 @@ else:
 
         filtered_related_ips = related_ips_data.copy()
         filtered_login_ips = login_ips_data.copy()
+        filtered_signup_accounts = pd.DataFrame()
 
         if search_input.strip():
             if search_type == "IP":
@@ -265,6 +302,9 @@ else:
                 ]
                 filtered_login_ips = login_ips_data[
                     login_ips_data["IP"].str.contains(search_input, case=False, na=False)
+                ]
+                filtered_signup_accounts = signup_ip_accounts[
+                    signup_ip_accounts["Signup IP"].str.contains(search_input, case=False, na=False)
                 ]
             else:
                 matched_ips = account_to_ips.get(search_input.strip().upper(), [])
@@ -284,10 +324,12 @@ else:
 
         st.session_state.filtered_related_ips = filtered_related_ips
         st.session_state.filtered_login_ips = filtered_login_ips
+        st.session_state.filtered_signup_accounts = filtered_signup_accounts
 
     if st.session_state.search_executed:
         filtered_related_ips = st.session_state.filtered_related_ips
         filtered_login_ips = st.session_state.filtered_login_ips
+        filtered_signup_accounts = st.session_state.filtered_signup_accounts
 
         total_ips = len(filtered_related_ips) + len(filtered_login_ips)
         related_ips_count = len(filtered_related_ips)
@@ -329,6 +371,17 @@ else:
                     st.rerun()
         else:
             st.warning("No related IPs found.")
+
+        if st.session_state.last_search_type == "IP":
+            st.markdown("### Signup IP Accounts")
+
+            if not filtered_signup_accounts.empty:
+                signup_display = add_row_numbers(filtered_signup_accounts)
+                styled_signup = signup_display.style.apply(highlight_risk_row, axis=1)
+                st.dataframe(styled_signup, use_container_width=True)
+                st.caption("Accounts highlighted in red are risk accounts.")
+            else:
+                st.warning("No signup accounts found for this IP.")
 
         st.markdown("### Login IPs without Relationships")
 
