@@ -4,8 +4,7 @@ import pandas as pd
 # ---------------------------
 # CONFIGURACIÓN DE LA PÁGINA
 # ---------------------------
-st.markdown("## IP Intelligence Report")
-st.caption("Internal prototype for IP relationship analysis, signup IP review, and linked account detection.")
+st.set_page_config(page_title="IP Report", layout="wide")
 
 # ---------------------------
 # HEADER CON LOGO
@@ -22,92 +21,7 @@ with col2:
 # ESTILOS
 # ---------------------------
 
-st.markdown("""
-<style>
 
-/* Fondo general */
-.stApp {
-    background-color: #f4f7fb;
-}
-
-/* Contenedor principal */
-.block-container {
-    padding-top: 1.5rem;
-    padding-bottom: 2rem;
-}
-
-/* Sidebar */
-section[data-testid="stSidebar"] {
-    background-color: #0b2d55;
-}
-
-section[data-testid="stSidebar"] * {
-    color: white !important;
-}
-
-/* Títulos */
-h1, h2, h3 {
-    color: #0b2d55;
-    font-weight: 700;
-}
-
-/* Botones */
-.stButton > button {
-    background-color: #0b5cab;
-    color: white;
-    border-radius: 8px;
-    border: none;
-    padding: 0.5rem 1rem;
-    font-weight: 600;
-}
-
-.stButton > button:hover {
-    background-color: #083f78;
-    color: white;
-}
-
-/* Inputs */
-.stTextInput input {
-    border-radius: 8px;
-    border: 1px solid #cbd5e1;
-}
-
-/* Métricas */
-div[data-testid="stMetric"] {
-    background-color: white;
-    border: 1px solid #e2e8f0;
-    padding: 18px;
-    border-radius: 14px;
-    box-shadow: 0px 2px 8px rgba(15, 23, 42, 0.06);
-}
-
-/* Tarjetas visuales */
-.custom-card {
-    background-color: white;
-    border: 1px solid #e2e8f0;
-    border-radius: 14px;
-    padding: 18px;
-    margin-bottom: 18px;
-    box-shadow: 0px 2px 8px rgba(15, 23, 42, 0.06);
-}
-
-/* Filas de riesgo */
-.risk-row {
-    background-color: #fde2e1;
-    padding: 8px;
-    border-radius: 6px;
-}
-
-/* Filas normales */
-.normal-row {
-    background-color: #ffffff;
-    padding: 8px;
-    border-radius: 6px;
-    border: 1px solid #e5e7eb;
-}
-
-</style>
-""", unsafe_allow_html=True)
 
 #-------------------------------------
 # SIDEBAR
@@ -347,8 +261,8 @@ def highlight_risk_row(row):
 
 def box_style(is_risk: bool) -> str:
     if is_risk:
-        return "background-color:#fde2e1; color:#991b1b; padding:10px; border-radius:8px; font-weight:600;"
-    return "background-color:#ffffff; color:#1e293b; padding:10px; border-radius:8px; border:1px solid #e5e7eb;"
+        return "background-color:#f8d7da; padding:8px; border-radius:4px;"
+    return "background-color:#ffffff; padding:8px; border-radius:4px; border:1px solid #eee;"
 
 # ---------------------------
 # PANTALLA DE DETALLE
