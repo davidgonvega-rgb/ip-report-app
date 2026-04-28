@@ -13,7 +13,7 @@ st.set_page_config(page_title="IP Report", layout="wide")
 col1, col2 = st.columns([4, 1])
 
 with col2:
-    st.image("betcris_logo.png", width=220)
+    st.image("betcrislogo.png", width=220)
 
 
 #-------------------------------------
