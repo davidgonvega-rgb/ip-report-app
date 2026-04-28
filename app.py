@@ -247,6 +247,30 @@ account_to_ips["A80013"] = account_to_ips.get("A80013", []) + ["563.230.092.55"]
 account_to_ips["A94003"] = account_to_ips.get("A94003", []) + ["563.230.092.88"]
 
 # ---------------------------
+# RISK ACCOUNTS SHARING MULTIPLE IPS
+# ---------------------------
+risk_accounts_multiple_ips = pd.DataFrame({
+    "Risk Account": ["A20456", "A40023", "A80013", "A94003", "A93003"],
+    "Customer": ["Luis P.", "Daniel V.", "Paula M.", "Camila R.", "Paola N."],
+    "Shared IP Count": [3, 4, 3, 5, 2],
+    "Shared IPs": [
+        "563.123.256.32, 563.230.092.22, 563.240.100.11",
+        "563.123.256.33, 563.230.092.41, 563.240.100.12, 563.240.100.13",
+        "563.123.256.36, 563.230.092.55, 563.240.100.14",
+        "563.123.256.41, 563.230.092.88, 563.240.100.15, 563.240.100.16, 563.240.100.17",
+        "563.123.256.40, 563.240.100.18"
+    ],
+    "Risk Type": [
+        "Bonus Abuse",
+        "Master Account",
+        "Bonus Abuse",
+        "Master Account",
+        "Bonus Abuse"
+    ]
+})
+
+
+# ---------------------------
 # FUNCIONES AUXILIARES
 # ---------------------------
 def add_row_numbers(df):
@@ -258,6 +282,9 @@ def highlight_risk_row(row):
     if row["Risk Account"] == True:
         return ['background-color: #f8d7da'] * len(row)
     return [''] * len(row)
+
+def highlight_risk_account_table(row):
+    return ['background-color: #f8d7da'] * len(row)
 
 def box_style(is_risk: bool) -> str:
     if is_risk:
@@ -404,6 +431,17 @@ else:
                     st.rerun()
         else:
             st.warning("No related IPs found.")
+
+        st.markdown("### Risk Accounts Sharing Multiple IPs")
+
+if not risk_accounts_multiple_ips.empty:
+    risk_multi_display = add_row_numbers(risk_accounts_multiple_ips)
+    styled_risk_multi = risk_multi_display.style.apply(highlight_risk_account_table, axis=1)
+    st.dataframe(styled_risk_multi, use_container_width=True)
+    st.caption("This section shows risk accounts that share more than one IP address.")
+else:
+    st.warning("No risk accounts sharing multiple IPs found.")
+        
 
         if st.session_state.last_search_type == "IP":
             st.markdown("### Signup IP Accounts")
