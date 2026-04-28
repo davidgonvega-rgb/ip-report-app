@@ -10,14 +10,15 @@ st.set_page_config(page_title="IP Report", layout="wide")
 # SIDEBAR
 # ---------------------------
 st.sidebar.title("IP Intelligence Tool")
+st.sidebar.subtitle("Betcris")
 st.sidebar.markdown("Prototype - Fraud Detection")
 st.sidebar.markdown("---")
 st.sidebar.write("**Search Modes**")
-st.sidebar.write("- Account")
-st.sidebar.write("- IP")
+st.sidebar.write("- By Account")
+st.sidebar.write("- By IP")
 st.sidebar.markdown("---")
 st.sidebar.write("**Environment**")
-st.sidebar.write("Mock Data / Demo Version")
+st.sidebar.write("Mock Data / Demo Version 1.0")
 
 
 
