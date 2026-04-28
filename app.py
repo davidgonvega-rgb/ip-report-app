@@ -57,22 +57,22 @@ if "last_search_input" not in st.session_state:
 # ---------------------------
 related_accounts_detail = {
     "563.123.256.32": pd.DataFrame({
-        "Account": ["A10234", "A20456", "A30567", "A40678"],
-        "Customer": ["Carlos M.", "Luis P.", "Mario G.", "Andrea T."],
-        "Country": ["Costa Rica", "Perú", "Costa Rica", "Guatemala"],
-        "Risk Account": [False, True, False, False]
+        "Account": ["A10234", "A20456", "A30567", "A40678", "A94003"],
+        "Customer": ["Carlos M.", "Luis P.", "Mario G.", "Andrea T.", "Camila R."],
+        "Country": ["Costa Rica", "Perú", "Costa Rica", "Guatemala", "Costa Rica"],
+        "Risk Account": [False, True, False, False, True]
     }),
     "563.123.256.33": pd.DataFrame({
-        "Account": ["A40021", "A40022", "A40023", "A40024", "A40025"],
-        "Customer": ["Ana R.", "Sofía T.", "Daniel V.", "Pedro L.", "Melissa C."],
-        "Country": ["México", "Costa Rica", "Guatemala", "Perú", "Panamá"],
-        "Risk Account": [False, False, True, False, False]
+        "Account": ["A40021", "A40022", "A40023", "A40024", "A40025", "A20456"],
+        "Customer": ["Ana R.", "Sofía T.", "Daniel V.", "Pedro L.", "Melissa C.", "Luis P."],
+        "Country": ["México", "Costa Rica", "Guatemala", "Perú", "Panamá", "Perú"],
+        "Risk Account": [False, False, True, False, False, True]
     }),
     "563.123.256.34": pd.DataFrame({
-        "Account": ["A51001", "A51002", "A51003"],
-        "Customer": ["Pedro L.", "María C.", "Javier F."],
-        "Country": ["Perú", "Costa Rica", "México"],
-        "Risk Account": [False, True, False]
+        "Account": ["A51001", "A51002", "A51003", "A40023"],
+        "Customer": ["Pedro L.", "María C.", "Javier F.", "Daniel V."],
+        "Country": ["Perú", "Costa Rica", "México", "Guatemala"],
+        "Risk Account": [False, True, False, True]
     }),
     "563.123.256.35": pd.DataFrame({
         "Account": ["A70001", "A70002"],
@@ -81,10 +81,10 @@ related_accounts_detail = {
         "Risk Account": [False, True]
     }),
     "563.123.256.36": pd.DataFrame({
-        "Account": ["A80011", "A80012", "A80013", "A80014"],
-        "Customer": ["Laura G.", "Esteban R.", "Paula M.", "José A."],
-        "Country": ["México", "México", "Costa Rica", "Perú"],
-        "Risk Account": [False, False, True, False]
+        "Account": ["A80011", "A80012", "A80013", "A80014", "A40023"],
+        "Customer": ["Laura G.", "Esteban R.", "Paula M.", "José A.", "Daniel V."],
+        "Country": ["México", "México", "Costa Rica", "Perú", "Guatemala"],
+        "Risk Account": [False, False, True, False, True]
     }),
     "563.123.256.37": pd.DataFrame({
         "Account": ["A90021", "A90022"],
@@ -93,10 +93,10 @@ related_accounts_detail = {
         "Risk Account": [False, False]
     }),
     "563.123.256.38": pd.DataFrame({
-        "Account": ["A91001", "A91002", "A91003"],
-        "Customer": ["Mauricio C.", "Gloria V.", "Andrés S."],
-        "Country": ["Panamá", "Costa Rica", "Ecuador"],
-        "Risk Account": [False, True, False]
+        "Account": ["A91001", "A91002", "A91003", "A20456"],
+        "Customer": ["Mauricio C.", "Gloria V.", "Andrés S.", "Luis P."],
+        "Country": ["Panamá", "Costa Rica", "Ecuador", "Perú"],
+        "Risk Account": [False, True, False, True]
     }),
     "563.123.256.39": pd.DataFrame({
         "Account": ["A92001", "A92002"],
@@ -175,28 +175,10 @@ for ip, df in related_accounts_detail.items():
         account_to_ips.setdefault(account, []).append(ip)
 
 account_to_ips["A10234"] = account_to_ips.get("A10234", []) + ["563.230.092.21"]
-account_to_ips["A20456"] = account_to_ips.get("A20456", []) + ["563.230.092.22", "563.240.100.11"]
-account_to_ips["A40023"] = account_to_ips.get("A40023", []) + ["563.230.092.41", "563.240.100.12", "563.240.100.13"]
-account_to_ips["A80013"] = account_to_ips.get("A80013", []) + ["563.230.092.55", "563.240.100.14"]
-account_to_ips["A94003"] = account_to_ips.get("A94003", []) + ["563.230.092.88", "563.240.100.15", "563.240.100.16", "563.240.100.17"]
-account_to_ips["A93003"] = account_to_ips.get("A93003", []) + ["563.240.100.18"]
-
-# ---------------------------
-# RISK ACCOUNTS SHARING MULTIPLE IPS
-# ---------------------------
-risk_accounts_multiple_ips = pd.DataFrame({
-    "Risk Account": ["A20456", "A40023", "A80013", "A94003", "A93003"],
-    "Customer": ["Luis P.", "Daniel V.", "Paula M.", "Camila R.", "Paola N."],
-    "Shared IP Count": [3, 4, 3, 5, 2],
-    "Shared IPs": [
-        "563.123.256.32, 563.230.092.22, 563.240.100.11",
-        "563.123.256.33, 563.230.092.41, 563.240.100.12, 563.240.100.13",
-        "563.123.256.36, 563.230.092.55, 563.240.100.14",
-        "563.123.256.41, 563.230.092.88, 563.240.100.15, 563.240.100.16, 563.240.100.17",
-        "563.123.256.40, 563.240.100.18"
-    ],
-    "Risk Type": ["Bonus Abuse", "Master Account", "Bonus Abuse", "Master Account", "Bonus Abuse"]
-})
+account_to_ips["A20456"] = account_to_ips.get("A20456", []) + ["563.230.092.22"]
+account_to_ips["A40023"] = account_to_ips.get("A40023", []) + ["563.230.092.41"]
+account_to_ips["A80013"] = account_to_ips.get("A80013", []) + ["563.230.092.55"]
+account_to_ips["A94003"] = account_to_ips.get("A94003", []) + ["563.230.092.88"]
 
 # ---------------------------
 # FUNCIONES AUXILIARES
@@ -218,6 +200,42 @@ def box_style(is_risk: bool) -> str:
     if is_risk:
         return "background-color:#f8d7da; padding:8px; border-radius:4px;"
     return "background-color:#ffffff; padding:8px; border-radius:4px; border:1px solid #eee;"
+
+def build_risk_accounts_multiple_ips(related_accounts_detail, filtered_related_ips):
+    allowed_ips = set(filtered_related_ips["IP Address"].tolist())
+    rows = []
+
+    for ip, df in related_accounts_detail.items():
+        if ip not in allowed_ips:
+            continue
+
+        risk_df = df[df["Risk Account"] == True]
+
+        for _, row in risk_df.iterrows():
+            rows.append({
+                "Risk Account": row["Account"],
+                "Customer": row["Customer"],
+                "Country": row["Country"],
+                "Shared IP": ip
+            })
+
+    if not rows:
+        return pd.DataFrame()
+
+    risk_df = pd.DataFrame(rows)
+
+    grouped = (
+        risk_df.groupby(["Risk Account", "Customer", "Country"])
+        .agg(
+            Shared_IP_Count=("Shared IP", "nunique"),
+            Shared_IPs=("Shared IP", lambda x: ", ".join(sorted(set(x))))
+        )
+        .reset_index()
+    )
+
+    grouped = grouped[grouped["Shared_IP_Count"] > 1]
+
+    return grouped
 
 # ---------------------------
 # PANTALLA DE DETALLE
@@ -385,13 +403,18 @@ else:
 
         st.markdown("### Risk Accounts Sharing Multiple IPs")
 
+        risk_accounts_multiple_ips = build_risk_accounts_multiple_ips(
+            related_accounts_detail,
+            filtered_related_ips
+        )
+
         if not risk_accounts_multiple_ips.empty:
             risk_multi_display = add_row_numbers(risk_accounts_multiple_ips)
             styled_risk_multi = risk_multi_display.style.apply(highlight_risk_account_table, axis=1)
             st.dataframe(styled_risk_multi, use_container_width=True)
-            st.caption("This section shows risk accounts that share more than one IP address.")
+            st.caption("Only risk accounts sharing more than one IP from the IPs listed above are shown.")
         else:
-            st.warning("No risk accounts sharing multiple IPs found.")
+            st.warning("No risk accounts sharing multiple listed IPs found.")
 
         if st.session_state.last_search_type == "IP":
             st.markdown("### Signup IP Accounts")
