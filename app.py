@@ -16,6 +16,126 @@ with col2:
     st.image("betcrislogo.png", width=250)
 
 
+
+#---------------------------------
+# ESTILOS
+# ---------------------------
+st.markdown("""
+<style>
+    .main {
+        background-color: #f5f7fb;
+    }
+
+    .block-container {
+        padding-top: 1.2rem;
+        padding-bottom: 2rem;
+    }
+
+    .top-bar {
+        background: white;
+        border: 1px solid #e6ebf2;
+        border-radius: 18px;
+        padding: 18px 24px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 12px rgba(16, 24, 40, 0.04);
+    }
+
+    .page-title {
+        font-size: 30px;
+        font-weight: 700;
+        color: #153b6f;
+        margin-bottom: 4px;
+    }
+
+    .page-subtitle {
+        font-size: 14px;
+        color: #667085;
+        margin-bottom: 0;
+    }
+
+    .section-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: #153b6f;
+        margin-top: 8px;
+        margin-bottom: 10px;
+    }
+
+    .search-card {
+        background: white;
+        border: 1px solid #e6ebf2;
+        border-radius: 18px;
+        padding: 18px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 12px rgba(16, 24, 40, 0.04);
+    }
+
+    .summary-card {
+        background: white;
+        border: 1px solid #e6ebf2;
+        border-radius: 18px;
+        padding: 18px;
+        text-align: center;
+        box-shadow: 0 2px 12px rgba(16, 24, 40, 0.04);
+    }
+
+    .summary-label {
+        font-size: 13px;
+        color: #667085;
+        margin-bottom: 6px;
+    }
+
+    .summary-value {
+        font-size: 28px;
+        font-weight: 700;
+        color: #153b6f;
+    }
+
+    .table-card {
+        background: white;
+        border: 1px solid #e6ebf2;
+        border-radius: 18px;
+        padding: 18px;
+        margin-bottom: 18px;
+        box-shadow: 0 2px 12px rgba(16, 24, 40, 0.04);
+    }
+
+    .detail-card {
+        background: white;
+        border: 1px solid #e6ebf2;
+        border-radius: 18px;
+        padding: 18px;
+        margin-bottom: 18px;
+        box-shadow: 0 2px 12px rgba(16, 24, 40, 0.04);
+    }
+
+    .small-note {
+        color: #667085;
+        font-size: 12px;
+        margin-top: 6px;
+    }
+
+    .risk-banner {
+        background: #fff1f3;
+        border: 1px solid #fecdd3;
+        color: #be123c;
+        padding: 12px 14px;
+        border-radius: 12px;
+        font-weight: 600;
+        margin-bottom: 12px;
+    }
+
+    div[data-testid="stMetric"] {
+        background: white;
+        border: 1px solid #e6ebf2;
+        border-radius: 18px;
+        padding: 14px;
+        box-shadow: 0 2px 12px rgba(16, 24, 40, 0.04);
+    }
+</style>
+""", unsafe_allow_html=True)
+
+
 #-------------------------------------
 # SIDEBAR
 # ---------------------------
