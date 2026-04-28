@@ -311,10 +311,15 @@ if st.session_state.selected_ip is not None:
         with c2:
             st.metric("Risk Accounts", total_risk_accounts)
 
-        st.markdown("### Linked Accounts Detail")
-        detail_df = add_row_numbers(detail_df)
-        styled_detail_df = detail_df.style.apply(highlight_risk_row, axis=1)
-        st.dataframe(styled_detail_df, use_container_width=True)
+               st.markdown("### Risk Accounts Sharing Multiple IPs")
+
+        if not risk_accounts_multiple_ips.empty:
+            risk_multi_display = add_row_numbers(risk_accounts_multiple_ips)
+            styled_risk_multi = risk_multi_display.style.apply(highlight_risk_account_table, axis=1)
+            st.dataframe(styled_risk_multi, use_container_width=True)
+            st.caption("This section shows risk accounts that share more than one IP address.")
+        else:
+            st.warning("No risk accounts sharing multiple IPs found.")
 
         st.caption("**Accounts highlighted in red are risk accounts (Either Master or Bonus abusers**).")
     else:
