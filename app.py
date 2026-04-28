@@ -272,7 +272,7 @@ if st.session_state.selected_ip is not None:
         styled_detail_df = detail_df.style.apply(highlight_risk_row, axis=1)
         st.dataframe(styled_detail_df, use_container_width=True)
 
-        st.caption("Accounts highlighted in red are risk accounts (Either Master or Bonus abusers).")
+        st.caption("**Accounts highlighted in red are risk accounts (Either Master or Bonus abusers**).")
     else:
         st.warning("No linked accounts found for this IP.")
 
