@@ -309,9 +309,11 @@ if st.session_state.selected_ip is not None:
         with c1:
             st.metric("Linked Accounts", total_accounts)
         with c2:
-            st.metric("Risk Accounts", total_risk_accounts)
+             st.metric("Risk Accounts", total_risk_accounts)
 
-               st.markdown("### Risk Accounts Sharing Multiple IPs")
+              st.markdown("### Risk Accounts Sharing Multiple IPs")
+
+              st.markdown("### Risk Accounts Sharing Multiple IPs")
 
         if not risk_accounts_multiple_ips.empty:
             risk_multi_display = add_row_numbers(risk_accounts_multiple_ips)
