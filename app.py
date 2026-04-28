@@ -10,9 +10,9 @@ st.set_page_config(page_title="IP Report", layout="wide")
 # HEADER CON LOGO
 # ---------------------------
 
-col1, col2 = st.columns([4, 1])
+col1 = st.columns([4, 1])
 
-with col2:
+with col1:
     st.image("betcrislogo.png", width=220)
 
 
