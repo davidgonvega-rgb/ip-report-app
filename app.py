@@ -9,19 +9,11 @@ st.set_page_config(page_title="IP Report", layout="wide")
 # ---------------------------
 # HEADER CON LOGO
 # ---------------------------
-top_col1, top_col2 = st.columns([1, 4])
+
+
 
 with top_col1:
-    st.image("betcrislogo.png", width=220)
-
-with top_col2:
-    st.markdown("""
-        <div class="top-bar">
-            <div class="page-title">IP Relationship Monitor</div>
-            <div class="page-subtitle">Prototype for account relationship analysis using Login IP and Signup IP activity.</div>
-        </div>
-    """, unsafe_allow_html=True)
-
+    st.image("betcris_logo.png", width=220)
 
 
 #-------------------------------------
