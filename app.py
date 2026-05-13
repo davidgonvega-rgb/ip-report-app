@@ -137,8 +137,8 @@ signup_ip_accounts = pd.DataFrame({
         "563.123.256.41"
     ],
     "Country": [
-        "Costa Rica", "Perú", "Guatemala", "Costa Rica", "Costa Rica",
-        "Costa Rica", "Costa Rica", "Costa Rica", "Costa Rica", "Perú"
+        "Ecuador", "Perú", "Guatemala", "Chile", "Panamá",
+        "Rep Dominicana", "Nicaragua", "Nicaragua", "Honduras", "Perú"
     ],
     "Risk Account": [
         False, True, True, True, True,
