@@ -121,8 +121,8 @@ signup_ip_accounts = pd.DataFrame({
         "A80013", "A91002", "A93003", "A94003", "A94005"
     ],
     "Customer": [
-        "Carlos M.", "Luis P.", "Daniel V.", "María C.", "Roberto N.",
-        "Paula M.", "Gloria V.", "Paola N.", "Camila R.", "Natalia S."
+        "Taylor Swift", "Bad Bunny", "Michael Jackson", "Frank Sinatra", "Bob Marley",
+        "Stevie Wonder", "David Bowie", "Roger Waters", "Sebastian Bach", "Steven Tyler"
     ],
     "Signup IP": [
         "563.123.256.32",
