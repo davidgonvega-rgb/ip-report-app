@@ -1,14 +1,8 @@
 import streamlit as st
 import pandas as pd
 
-# ---------------------------
-# PAGE CONFIG
-# ---------------------------
 st.set_page_config(page_title="IP Report", layout="wide")
 
-# ---------------------------
-# SIDEBAR
-# ---------------------------
 st.sidebar.title("Betcris")
 st.sidebar.title("IP Intelligence Tool")
 st.sidebar.markdown("Prototype")
@@ -20,21 +14,14 @@ st.sidebar.markdown("---")
 st.sidebar.write("**Environment**")
 st.sidebar.write("Mock Data / Demo Version 1.0")
 
-# ---------------------------
-# SESSION STATE
-# ---------------------------
 if "selected_ip" not in st.session_state:
     st.session_state.selected_ip = None
-
 if "selected_ip_type" not in st.session_state:
     st.session_state.selected_ip_type = None
-
 if "search_executed" not in st.session_state:
     st.session_state.search_executed = False
-
 if "last_search_type" not in st.session_state:
     st.session_state.last_search_type = "Account"
-
 if "last_search_input" not in st.session_state:
     st.session_state.last_search_input = ""
 
@@ -48,9 +35,6 @@ for key in [
     if key not in st.session_state:
         st.session_state[key] = pd.DataFrame()
 
-# ---------------------------
-# RELATED LOGIN IP DATA
-# ---------------------------
 related_accounts_detail = {
     "563.123.256.32": pd.DataFrame({
         "Account": ["A20456", "A10234", "A30567", "A40678"],
@@ -65,9 +49,9 @@ related_accounts_detail = {
         "Risk Account": [False, False, False, False, True]
     }),
     "563.123.256.34": pd.DataFrame({
-        "Account": ["A20456", "A51001", "A51002", "A51003"],
-        "Customer": ["Bad Bunny", "Bob Dylan", "Frank Sinatra", "Johnny Cash"],
-        "Country": ["Perú", "Perú", "Chile", "México"],
+        "Account": ["A20456", "A40023", "A51002", "A51003"],
+        "Customer": ["Bad Bunny", "Michael Jackson", "Frank Sinatra", "Johnny Cash"],
+        "Country": ["Perú", "Guatemala", "Chile", "México"],
         "Risk Account": [False, False, True, False]
     }),
     "563.123.256.35": pd.DataFrame({
@@ -77,15 +61,15 @@ related_accounts_detail = {
         "Risk Account": [False, False, True]
     }),
     "563.123.256.36": pd.DataFrame({
-        "Account": ["A20456", "A80011", "A80012", "A80014"],
-        "Customer": ["Bad Bunny", "Ray Charles", "Jimi Hendrix", "James Brown"],
-        "Country": ["Perú", "México", "México", "Perú"],
+        "Account": ["A20456", "A40023", "A80012", "A80014"],
+        "Customer": ["Bad Bunny", "Michael Jackson", "Jimi Hendrix", "James Brown"],
+        "Country": ["Perú", "Guatemala", "México", "Perú"],
         "Risk Account": [False, False, False, False]
     }),
     "563.123.256.37": pd.DataFrame({
-        "Account": ["A40023", "A90021", "A90022"],
-        "Customer": ["Michael Jackson", "Tupac Shakur", "Eric Clapton"],
-        "Country": ["Guatemala", "Guatemala", "Guatemala"],
+        "Account": ["A40023", "A20456", "A90022"],
+        "Customer": ["Michael Jackson", "Bad Bunny", "Eric Clapton"],
+        "Country": ["Guatemala", "Perú", "Guatemala"],
         "Risk Account": [False, False, False]
     }),
     "563.123.256.38": pd.DataFrame({
@@ -150,9 +134,6 @@ for ip, df in related_accounts_detail.items():
 related_ips_data = pd.DataFrame(related_ips_rows).sort_values("IP Address").reset_index(drop=True)
 login_ip_accounts = pd.DataFrame(login_ip_accounts_rows)
 
-# ---------------------------
-# LOGIN IPS WITHOUT RELATIONSHIPS
-# ---------------------------
 login_ips_without_relationships = pd.DataFrame({
     "Account": [
         "A20456", "A20456", "A20456",
@@ -199,10 +180,6 @@ login_ips_without_relationships = pd.DataFrame({
     ]
 })
 
-# ---------------------------
-# SIGNUP IP ACCOUNTS
-# cada cuenta tiene un único Signup IP
-# ---------------------------
 signup_ip_accounts = pd.DataFrame({
     "Account": [
         "A20456", "A10234", "A30567",
@@ -253,9 +230,6 @@ for ip, df in signup_ip_accounts.groupby("Signup IP"):
 
 signup_ips_summary = pd.DataFrame(signup_ips_rows).sort_values("Signup IP").reset_index(drop=True)
 
-# ---------------------------
-# ACCOUNT MAPS
-# ---------------------------
 account_to_related_ips = {}
 for ip, df in related_accounts_detail.items():
     for account in df["Account"].tolist():
@@ -269,9 +243,6 @@ account_to_signup_ip = {}
 for _, row in signup_ip_accounts.iterrows():
     account_to_signup_ip[row["Account"]] = row["Signup IP"]
 
-# ---------------------------
-# HELPERS
-# ---------------------------
 def add_row_numbers(df):
     df = df.copy()
     df.index = range(1, len(df) + 1)
@@ -331,9 +302,42 @@ def show_ip_summary_table(df, ip_column, related_column, last_login_column=None,
                 st.session_state.selected_ip_type = "signup"
                 st.rerun()
 
-# ---------------------------
-# DETAIL PAGE
-# ---------------------------
+def build_accounts_sharing_multiple_ips(related_accounts_detail, filtered_related_ips):
+    allowed_ips = set(filtered_related_ips["IP Address"].tolist())
+    account_ip_map = {}
+
+    for ip, df in related_accounts_detail.items():
+        if ip not in allowed_ips:
+            continue
+
+        for _, row in df.iterrows():
+            account = row["Account"]
+            customer = row["Customer"]
+
+            if account not in account_ip_map:
+                account_ip_map[account] = {
+                    "Account": account,
+                    "Customer": customer,
+                    "Shared IPs": []
+                }
+
+            account_ip_map[account]["Shared IPs"].append(ip)
+
+    rows = []
+
+    for account, data in account_ip_map.items():
+        unique_ips = sorted(set(data["Shared IPs"]))
+
+        if len(unique_ips) > 1:
+            rows.append({
+                "Account": data["Account"],
+                "Customer": data["Customer"],
+                "Shared IP Count": len(unique_ips),
+                "Shared IPs": ", ".join(unique_ips)
+            })
+
+    return pd.DataFrame(rows)
+
 if st.session_state.selected_ip is not None:
     selected_ip = st.session_state.selected_ip
     selected_type = st.session_state.selected_ip_type
@@ -371,9 +375,6 @@ if st.session_state.selected_ip is not None:
         st.session_state.selected_ip_type = None
         st.rerun()
 
-# ---------------------------
-# MAIN PAGE
-# ---------------------------
 else:
     st.title("IP Report")
     st.subheader("Search by Account or IP")
@@ -491,6 +492,21 @@ else:
                 )
             else:
                 st.warning("No related IPs found.")
+
+            st.markdown("## Accounts Sharing Multiple IPs")
+
+            accounts_sharing_multiple_ips = build_accounts_sharing_multiple_ips(
+                related_accounts_detail,
+                filtered_related_ips
+            )
+
+            if not accounts_sharing_multiple_ips.empty:
+                st.dataframe(
+                    add_row_numbers(accounts_sharing_multiple_ips),
+                    use_container_width=True
+                )
+            else:
+                st.warning("No accounts sharing multiple IPs found.")
 
             st.markdown("## Signup IP")
 
