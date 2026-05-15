@@ -302,8 +302,10 @@ def show_ip_summary_table(df, ip_column, related_column, last_login_column=None,
                 st.session_state.selected_ip_type = "signup"
                 st.rerun()
 
-def build_accounts_sharing_multiple_ips(related_accounts_detail, filtered_related_ips):
+def build_accounts_sharing_multiple_ips(related_accounts_detail, filtered_related_ips, searched_account):
     allowed_ips = set(filtered_related_ips["IP Address"].tolist())
+    searched_account = searched_account.strip().upper()
+
     account_ip_map = {}
 
     for ip, df in related_accounts_detail.items():
@@ -311,8 +313,11 @@ def build_accounts_sharing_multiple_ips(related_accounts_detail, filtered_relate
             continue
 
         for _, row in df.iterrows():
-            account = row["Account"]
+            account = str(row["Account"]).strip().upper()
             customer = row["Customer"]
+
+            if account == searched_account:
+                continue
 
             if account not in account_ip_map:
                 account_ip_map[account] = {
@@ -497,7 +502,8 @@ else:
 
             accounts_sharing_multiple_ips = build_accounts_sharing_multiple_ips(
                 related_accounts_detail,
-                filtered_related_ips
+                filtered_related_ips,
+                st.session_state.last_search_input
             )
 
             if not accounts_sharing_multiple_ips.empty:
@@ -506,7 +512,7 @@ else:
                     use_container_width=True
                 )
             else:
-                st.warning("No accounts sharing multiple IPs found.")
+                st.warning("No other accounts sharing multiple IPs found.")
 
             st.markdown("## Signup IP")
 
