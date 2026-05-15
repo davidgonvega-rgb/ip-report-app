@@ -308,35 +308,33 @@ else:
     st.title("IP Report")
     st.subheader("Search by Account or IP")
 
- col1, col2 = st.columns([4, 1])
+    col1, col2 = st.columns([4, 1])
 
-with col2:
-    st.image("betcrislogo.png", width=250)
+    with col2:
+        st.image("betcrislogo.png", width=250)
 
-search_type = st.radio(
-    "Search Type",
-    ["Account", "IP"],
-    horizontal=True,
-    index=0 if st.session_state.last_search_type == "Account" else 1
-)
-
-search_col1, search_col2 = st.columns([2, 2])
-
-with search_col1:
-    search_input = st.text_input(
-        "Type Search Value",
-        value=st.session_state.last_search_input,
-        placeholder="A20456, A40023 or 563.123.256.33"
+    search_type = st.radio(
+        "Search Type",
+        ["Account", "IP"],
+        horizontal=True,
+        index=0 if st.session_state.last_search_type == "Account" else 1
     )
 
-with search_col2:
-    st.date_input(
-        "Date Range",
-        value=(date(2025, 1, 1), date(2025, 12, 31)),
-        help="Visual filter only. Not functional in this prototype version."
-    )
+    search_col1, search_col2 = st.columns([2, 2])
 
-if st.button("Search"):
+    with search_col1:
+        search_input = st.text_input(
+            "Type Search Value",
+            value=st.session_state.last_search_input,
+            placeholder="A20456, A40023 or 563.123.256.33"
+        )
+
+    with search_col2:
+        st.date_input(
+            "Date Range",
+            value=(date(2025, 1, 1), date(2025, 12, 31)),
+            help="Visual filter only. Not functional in this prototype version."
+        )
 
     if st.button("Search"):
         st.session_state.last_search_type = search_type
