@@ -38,20 +38,15 @@ if "last_search_type" not in st.session_state:
 if "last_search_input" not in st.session_state:
     st.session_state.last_search_input = ""
 
-if "filtered_related_ips" not in st.session_state:
-    st.session_state.filtered_related_ips = pd.DataFrame()
-
-if "filtered_login_ips" not in st.session_state:
-    st.session_state.filtered_login_ips = pd.DataFrame()
-
-if "filtered_signup_ips" not in st.session_state:
-    st.session_state.filtered_signup_ips = pd.DataFrame()
-
-if "filtered_login_ip_accounts" not in st.session_state:
-    st.session_state.filtered_login_ip_accounts = pd.DataFrame()
-
-if "filtered_signup_accounts" not in st.session_state:
-    st.session_state.filtered_signup_accounts = pd.DataFrame()
+for key in [
+    "filtered_related_ips",
+    "filtered_login_ips",
+    "filtered_signup_ips",
+    "filtered_login_ip_accounts",
+    "filtered_signup_accounts"
+]:
+    if key not in st.session_state:
+        st.session_state[key] = pd.DataFrame()
 
 # ---------------------------
 # RELATED LOGIN IP DATA
@@ -206,19 +201,18 @@ login_ips_without_relationships = pd.DataFrame({
 
 # ---------------------------
 # SIGNUP IP ACCOUNTS
+# cada cuenta tiene un único Signup IP
 # ---------------------------
 signup_ip_accounts = pd.DataFrame({
     "Account": [
         "A20456", "A10234", "A30567",
         "A40023", "A40021", "A99001",
-        "A51002", "A80013", "A94003", "A94005",
-        "A20456", "A40023"
+        "A51002", "A80013", "A94003", "A94005"
     ],
     "Customer": [
         "Bad Bunny", "Taylor Swift", "Ariana Grande",
         "Michael Jackson", "Freddie Mercury", "Risk User 1",
-        "Frank Sinatra", "Stevie Wonder", "Sebastian Bach", "Steven Tyler",
-        "Bad Bunny", "Michael Jackson"
+        "Frank Sinatra", "Stevie Wonder", "Sebastian Bach", "Steven Tyler"
     ],
     "Signup IP": [
         "563.111.111.10",
@@ -230,27 +224,22 @@ signup_ip_accounts = pd.DataFrame({
         "563.111.111.30",
         "563.111.111.40",
         "563.111.111.50",
-        "563.111.111.50",
-        "563.111.111.60",
-        "563.111.111.70"
+        "563.111.111.50"
     ],
     "Country": [
         "Perú", "Ecuador", "Honduras",
         "Guatemala", "México", "Costa Rica",
-        "Chile", "Rep Dominicana", "Honduras", "Perú",
-        "Perú", "Guatemala"
+        "Chile", "Rep Dominicana", "Honduras", "Perú"
     ],
     "Risk Account": [
         False, False, False,
         False, False, True,
-        True, True, True, False,
-        True, False
+        True, True, True, False
     ],
     "Created Date": [
         "2025-01-05", "2025-01-06", "2025-01-07",
         "2025-02-10", "2025-02-11", "2025-02-12",
-        "2025-03-01", "2025-03-14", "2025-04-20", "2025-04-22",
-        "2025-05-01", "2025-05-10"
+        "2025-03-01", "2025-03-14", "2025-04-20", "2025-04-22"
     ]
 })
 
@@ -265,7 +254,7 @@ for ip, df in signup_ip_accounts.groupby("Signup IP"):
 signup_ips_summary = pd.DataFrame(signup_ips_rows).sort_values("Signup IP").reset_index(drop=True)
 
 # ---------------------------
-# RELACIÓN CUENTA -> IPS
+# ACCOUNT MAPS
 # ---------------------------
 account_to_related_ips = {}
 for ip, df in related_accounts_detail.items():
@@ -276,9 +265,9 @@ account_to_login_ips_without_relationships = {}
 for _, row in login_ips_without_relationships.iterrows():
     account_to_login_ips_without_relationships.setdefault(row["Account"], []).append(row["Login IP"])
 
-account_to_signup_ips = {}
+account_to_signup_ip = {}
 for _, row in signup_ip_accounts.iterrows():
-    account_to_signup_ips.setdefault(row["Account"], []).append(row["Signup IP"])
+    account_to_signup_ip[row["Account"]] = row["Signup IP"]
 
 # ---------------------------
 # HELPERS
@@ -352,13 +341,10 @@ if st.session_state.selected_ip is not None:
     if selected_type == "signup":
         st.title("Signup IP Detail")
         st.subheader(f"Linked Signup Accounts for IP: {selected_ip}")
-
         detail_df = signup_ip_accounts[signup_ip_accounts["Signup IP"] == selected_ip].copy()
-
     else:
         st.title("Login IP Detail")
         st.subheader(f"Linked Login Accounts for IP: {selected_ip}")
-
         detail_df = related_accounts_detail.get(selected_ip, pd.DataFrame()).copy()
 
     if not detail_df.empty:
@@ -424,7 +410,9 @@ else:
             if search_type == "Account":
                 related_ip_matches = account_to_related_ips.get(search_clean, [])
                 login_ip_matches = account_to_login_ips_without_relationships.get(search_clean, [])
-                signup_ip_matches = account_to_signup_ips.get(search_clean, [])
+
+                signup_ip_match = account_to_signup_ip.get(search_clean)
+                signup_ip_matches = [signup_ip_match] if signup_ip_match else []
 
                 filtered_related_ips = related_ips_data[
                     related_ips_data["IP Address"].isin(related_ip_matches)
@@ -432,7 +420,7 @@ else:
 
                 filtered_login_ips = login_ips_without_relationships[
                     login_ips_without_relationships["Login IP"].isin(login_ip_matches)
-                ]
+                ][["Login IP", "Last Login", "Location"]]
 
                 filtered_signup_ips = signup_ips_summary[
                     signup_ips_summary["Signup IP"].isin(signup_ip_matches)
@@ -504,7 +492,7 @@ else:
             else:
                 st.warning("No related IPs found.")
 
-            st.markdown("## Signup IPs")
+            st.markdown("## Signup IP")
 
             if not filtered_signup_ips.empty:
                 show_ip_summary_table(
@@ -513,7 +501,7 @@ else:
                     related_column="Related Accounts"
                 )
             else:
-                st.warning("No signup IPs found.")
+                st.warning("No signup IP found.")
 
             st.markdown("## Login IPs without Relationships")
 
