@@ -311,7 +311,7 @@ else:
     col1, col2 = st.columns([4, 1])
 
     with col2:
-        st.image("betcrislogo.png", width=250)
+        st.image("betcrislogo.png", width=350)
 
     search_type = st.radio(
         "Search Type",
