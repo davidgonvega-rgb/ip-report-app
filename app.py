@@ -111,6 +111,19 @@ ip_last_login_map = {
     "563.123.256.41": "7/21/2025 07:50AM"
 }
 
+ip_location_map = {
+    "563.123.256.32": "Lima, Perú",
+    "563.123.256.33": "Guatemala City, Guatemala",
+    "563.123.256.34": "Santiago, Chile",
+    "563.123.256.35": "Panamá City, Panamá",
+    "563.123.256.36": "Ciudad de México, México",
+    "563.123.256.37": "San José, Costa Rica",
+    "563.123.256.38": "Managua, Nicaragua",
+    "563.123.256.39": "Tegucigalpa, Honduras",
+    "563.123.256.40": "Quito, Ecuador",
+    "563.123.256.41": "San Pedro Sula, Honduras"
+}
+
 related_ips_rows = []
 login_ip_accounts_rows = []
 
@@ -118,7 +131,7 @@ for ip, df in related_accounts_detail.items():
     related_ips_rows.append({
         "IP Address": ip,
         "Related Accounts": len(df),
-        "Last Login": ip_last_login_map.get(ip, "N/A"),
+        "Location": ip_location_map.get(ip, "N/A"),
         "Has Risk Account": bool(df["Risk Account"].any())
     })
 
@@ -258,15 +271,15 @@ def box_style(is_risk: bool) -> str:
         return "background-color:#f8d7da; padding:8px; border-radius:4px;"
     return "background-color:#ffffff; padding:8px; border-radius:4px; border:1px solid #eee;"
 
-def show_ip_summary_table(df, ip_column, related_column, last_login_column=None, has_risk_column="Has Risk Account"):
+def show_ip_summary_table(df, ip_column, related_column, info_column=None, has_risk_column="Has Risk Account"):
     display_df = add_row_numbers(df)
 
-    if last_login_column and last_login_column in display_df.columns:
+    if info_column and info_column in display_df.columns:
         header_cols = st.columns([1, 3, 2, 3, 2])
         header_cols[0].markdown("**#**")
         header_cols[1].markdown(f"**{ip_column}**")
         header_cols[2].markdown(f"**{related_column}**")
-        header_cols[3].markdown("**Last Login**")
+        header_cols[3].markdown(f"**{info_column}**")
         header_cols[4].markdown("**Details**")
 
         for idx, row in display_df.iterrows():
@@ -276,7 +289,7 @@ def show_ip_summary_table(df, ip_column, related_column, last_login_column=None,
             row_cols[0].markdown(f"<div style='{style}'>{idx}</div>", unsafe_allow_html=True)
             row_cols[1].markdown(f"<div style='{style}'>{row[ip_column]}</div>", unsafe_allow_html=True)
             row_cols[2].markdown(f"<div style='{style}'>{row[related_column]}</div>", unsafe_allow_html=True)
-            row_cols[3].markdown(f"<div style='{style}'>{row[last_login_column]}</div>", unsafe_allow_html=True)
+            row_cols[3].markdown(f"<div style='{style}'>{row[info_column]}</div>", unsafe_allow_html=True)
 
             if row_cols[4].button("View More", key=f"view_{ip_column}_{row[ip_column]}"):
                 st.session_state.selected_ip = row[ip_column]
@@ -354,7 +367,12 @@ if st.session_state.selected_ip is not None:
     else:
         st.title("Login IP Detail")
         st.subheader(f"Linked Login Accounts for IP: {selected_ip}")
+
         detail_df = related_accounts_detail.get(selected_ip, pd.DataFrame()).copy()
+
+        if not detail_df.empty:
+            detail_df["Last Login"] = ip_last_login_map.get(selected_ip, "N/A")
+            detail_df = detail_df[["Account", "Customer", "Last Login", "Risk Account"]]
 
     if not detail_df.empty:
         total_accounts = len(detail_df)
@@ -493,7 +511,7 @@ else:
                     filtered_related_ips,
                     ip_column="IP Address",
                     related_column="Related Accounts",
-                    last_login_column="Last Login"
+                    info_column="Location"
                 )
             else:
                 st.warning("No related IPs found.")
