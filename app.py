@@ -34,12 +34,13 @@ for key in [
     "filtered_signup_ips",
     "filtered_login_ip_accounts",
     "filtered_signup_accounts",
+    "filtered_related_login_accounts"
 ]:
     if key not in st.session_state:
         st.session_state[key] = pd.DataFrame()
 
 # ---------------------------
-# MOCK DATA: LOGIN IP RELATIONSHIPS
+# LOGIN IP ACCOUNTS
 # ---------------------------
 login_ip_accounts = pd.DataFrame({
     "Account": [
@@ -116,8 +117,6 @@ login_ip_accounts = pd.DataFrame({
     ]
 })
 
-login_ip_accounts["Last Login"] = pd.to_datetime(login_ip_accounts["Last Login"])
-
 # ---------------------------
 # LOGIN IPS WITHOUT RELATIONSHIPS
 # ---------------------------
@@ -128,8 +127,6 @@ login_ips_without_relationships = pd.DataFrame({
     "Last Login": ["2025-01-16","2025-02-16","2025-03-10","2025-02-14","2025-06-03","2025-06-15","2025-01-17","2025-07-01","2025-07-04"],
     "Location": ["San José, Costa Rica","Lima, Perú","Quito, Ecuador","Ciudad de México, México","Quito, Ecuador","Panamá City, Panamá","San José, Costa Rica","Guatemala City, Guatemala","Managua, Nicaragua"]
 })
-
-login_ips_without_relationships["Last Login"] = pd.to_datetime(login_ips_without_relationships["Last Login"])
 
 # ---------------------------
 # SIGNUP IP ACCOUNTS
@@ -143,20 +140,9 @@ signup_ip_accounts = pd.DataFrame({
     "Created Date": ["2025-01-05","2025-01-06","2025-01-07","2025-02-10","2025-02-11","2025-02-12","2025-03-01","2025-03-14","2025-04-20","2025-04-22"]
 })
 
-signup_ip_accounts["Created Date"] = pd.to_datetime(signup_ip_accounts["Created Date"])
-
 # ---------------------------
 # HELPERS
 # ---------------------------
-def filter_by_date(df, date_column, start_date, end_date):
-    if df.empty:
-        return df
-
-    return df[
-        (df[date_column] >= pd.to_datetime(start_date)) &
-        (df[date_column] <= pd.to_datetime(end_date))
-    ].copy()
-
 def add_row_numbers(df):
     df = df.copy()
     df.index = range(1, len(df) + 1)
@@ -340,15 +326,11 @@ else:
         )
 
     with col3:
-        date_range = st.date_input(
+        st.date_input(
             "Date Range",
-            value=(date(2025, 1, 1), date(2025, 12, 31))
+            value=(date(2025, 1, 1), date(2025, 12, 31)),
+            help="Visual filter only. Not functional in this prototype version."
         )
-
-    if isinstance(date_range, tuple) and len(date_range) == 2:
-        start_date, end_date = date_range
-    else:
-        start_date, end_date = date(2025, 1, 1), date(2025, 12, 31)
 
     if st.button("Search"):
         st.session_state.last_search_type = search_type
@@ -357,35 +339,31 @@ else:
 
         search_clean = search_input.strip().upper()
 
-        login_filtered_by_date = filter_by_date(login_ip_accounts, "Last Login", start_date, end_date)
-        standalone_filtered_by_date = filter_by_date(login_ips_without_relationships, "Last Login", start_date, end_date)
-        signup_filtered_by_date = filter_by_date(signup_ip_accounts, "Created Date", start_date, end_date)
-
         if search_type == "Account":
-            account_login_rows = login_filtered_by_date[
-                login_filtered_by_date["Account"].str.upper() == search_clean
+            account_login_rows = login_ip_accounts[
+                login_ip_accounts["Account"].str.upper() == search_clean
             ]
 
             related_ip_matches = account_login_rows["Login IP"].unique().tolist()
 
-            filtered_related_login_accounts = login_filtered_by_date[
-                login_filtered_by_date["Login IP"].isin(related_ip_matches)
+            filtered_related_login_accounts = login_ip_accounts[
+                login_ip_accounts["Login IP"].isin(related_ip_matches)
             ]
 
             filtered_related_ips = build_related_ips_summary(filtered_related_login_accounts)
 
-            filtered_login_ips = standalone_filtered_by_date[
-                standalone_filtered_by_date["Account"].str.upper() == search_clean
+            filtered_login_ips = login_ips_without_relationships[
+                login_ips_without_relationships["Account"].str.upper() == search_clean
             ][["Login IP", "Last Login", "Location"]]
 
-            account_signup_row = signup_filtered_by_date[
-                signup_filtered_by_date["Account"].str.upper() == search_clean
+            account_signup_row = signup_ip_accounts[
+                signup_ip_accounts["Account"].str.upper() == search_clean
             ]
 
             signup_ip_matches = account_signup_row["Signup IP"].unique().tolist()
 
-            filtered_signup_accounts_for_summary = signup_filtered_by_date[
-                signup_filtered_by_date["Signup IP"].isin(signup_ip_matches)
+            filtered_signup_accounts_for_summary = signup_ip_accounts[
+                signup_ip_accounts["Signup IP"].isin(signup_ip_matches)
             ]
 
             filtered_signup_ips = build_signup_ips_summary(filtered_signup_accounts_for_summary)
@@ -396,12 +374,12 @@ else:
             st.session_state.filtered_signup_ips = filtered_signup_ips
 
         else:
-            filtered_login_ip_accounts = login_filtered_by_date[
-                login_filtered_by_date["Login IP"].str.contains(search_clean, case=False, na=False)
+            filtered_login_ip_accounts = login_ip_accounts[
+                login_ip_accounts["Login IP"].str.contains(search_clean, case=False, na=False)
             ]
 
-            standalone_login_accounts = standalone_filtered_by_date[
-                standalone_filtered_by_date["Login IP"].str.contains(search_clean, case=False, na=False)
+            standalone_login_accounts = login_ips_without_relationships[
+                login_ips_without_relationships["Login IP"].str.contains(search_clean, case=False, na=False)
             ][["Account", "Customer", "Login IP", "Location", "Last Login"]].copy()
 
             if not standalone_login_accounts.empty:
@@ -419,8 +397,8 @@ else:
                 ignore_index=True
             )
 
-            filtered_signup_accounts = signup_filtered_by_date[
-                signup_filtered_by_date["Signup IP"].str.contains(search_clean, case=False, na=False)
+            filtered_signup_accounts = signup_ip_accounts[
+                signup_ip_accounts["Signup IP"].str.contains(search_clean, case=False, na=False)
             ]
 
             st.session_state.filtered_login_ip_accounts = filtered_login_ip_accounts
@@ -449,7 +427,7 @@ else:
             if not filtered_related_ips.empty:
                 show_ip_summary_table(filtered_related_ips, "IP Address", "Related Accounts", "Location")
             else:
-                st.warning("No related IPs found in the selected date range.")
+                st.warning("No related IPs found.")
 
             st.markdown("## Accounts Sharing Multiple IPs")
             accounts_sharing_multiple_ips = build_accounts_sharing_multiple_ips(
@@ -460,19 +438,19 @@ else:
             if not accounts_sharing_multiple_ips.empty:
                 st.dataframe(add_row_numbers(accounts_sharing_multiple_ips), use_container_width=True)
             else:
-                st.warning("No other accounts sharing multiple IPs found in the selected date range.")
+                st.warning("No other accounts sharing multiple IPs found.")
 
             st.markdown("## Signup IP")
             if not filtered_signup_ips.empty:
                 show_ip_summary_table(filtered_signup_ips, "Signup IP", "Related Accounts")
             else:
-                st.warning("No signup IP found in the selected date range.")
+                st.warning("No signup IP found.")
 
             st.markdown("## Login IPs without Relationships")
             if not filtered_login_ips.empty:
                 st.dataframe(add_row_numbers(filtered_login_ips), use_container_width=True)
             else:
-                st.warning("No login IPs without relationships found in the selected date range.")
+                st.warning("No login IPs without relationships found.")
 
         else:
             filtered_login_ip_accounts = st.session_state.filtered_login_ip_accounts
@@ -491,11 +469,11 @@ else:
                 styled_df = add_row_numbers(filtered_login_ip_accounts).style.apply(highlight_risk_row, axis=1)
                 st.dataframe(styled_df, use_container_width=True)
             else:
-                st.warning("No accounts found using this IP as Login IP in the selected date range.")
+                st.warning("No accounts found using this IP as Login IP.")
 
             st.markdown("## Signup IP Accounts")
             if not filtered_signup_accounts.empty:
                 styled_df = add_row_numbers(filtered_signup_accounts).style.apply(highlight_risk_row, axis=1)
                 st.dataframe(styled_df, use_container_width=True)
             else:
-                st.warning("No accounts found using this IP as Signup IP in the selected date range.")
+                st.warning("No accounts found using this IP as Signup IP.")
