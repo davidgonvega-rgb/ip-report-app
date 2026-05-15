@@ -308,6 +308,8 @@ else:
     st.title("IP Report")
     st.subheader("Search by Account or IP")
 
+ st.image("betcrislogo.png", width=250)
+
 search_type = st.radio(
     "Search Type",
     ["Account", "IP"],
