@@ -326,7 +326,7 @@ else:
         search_input = st.text_input(
             "Type Search Value",
             value=st.session_state.last_search_input,
-            placeholder="A20456, A40023 or 563.123.256.33"
+            placeholder="A20456, or 563.123.256.33"
         )
 
     with search_col2:
