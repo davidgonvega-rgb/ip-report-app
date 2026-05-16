@@ -390,76 +390,109 @@ else:
         )
 
 if st.button("Search"):
-        st.session_state.last_search_type = search_type
-        st.session_state.last_search_input = search_input
-        st.session_state.search_executed = True
+    st.session_state.last_search_type = search_type
+    st.session_state.last_search_input = search_input
+    st.session_state.search_executed = True
 
-        search_clean = search_input.strip().upper()
+    search_clean = search_input.strip().upper()
 
     if search_type == "Account":
-            account_login_rows = login_ip_accounts[
-                login_ip_accounts["Account"].str.upper() == search_clean
+        account_login_rows = login_ip_accounts[
+            login_ip_accounts["Account"].str.upper() == search_clean
+        ]
+
+        account_signup_row = signup_ip_accounts[
+            signup_ip_accounts["Account"].str.upper() == search_clean
+        ]
+
+        related_ip_matches = account_login_rows["Login IP"].unique().tolist()
+        signup_ip_matches = account_signup_row["Signup IP"].unique().tolist()
+
+        signup_ip_as_login_rows = login_ip_accounts[
+            login_ip_accounts["Login IP"].isin(signup_ip_matches)
+        ]
+
+        signup_ip_as_signup_rows = signup_ip_accounts[
+            signup_ip_accounts["Signup IP"].isin(signup_ip_matches)
+        ]
+
+        signup_ip_has_login_relation = not signup_ip_as_login_rows.empty
+        signup_ip_has_signup_relation = signup_ip_as_signup_rows["Account"].nunique() > 1
+
+        if signup_ip_has_login_relation or signup_ip_has_signup_relation:
+            related_ip_matches = list(set(related_ip_matches + signup_ip_matches))
+
+        filtered_related_login_accounts = login_ip_accounts[
+            login_ip_accounts["Login IP"].isin(related_ip_matches)
+        ]
+
+        signup_related_accounts_for_related_ip = signup_ip_accounts[
+            signup_ip_accounts["Signup IP"].isin(related_ip_matches)
+        ].rename(columns={
+            "Signup IP": "Login IP",
+            "Created Date": "Last Login"
+        })
+
+        if not signup_related_accounts_for_related_ip.empty:
+            signup_related_accounts_for_related_ip["Location"] = signup_related_accounts_for_related_ip["Country"]
+
+            signup_related_accounts_for_related_ip = signup_related_accounts_for_related_ip[
+                ["Account", "Customer", "Login IP", "Location", "Risk Account", "Last Login"]
             ]
 
-            account_signup_row = signup_ip_accounts[
-                signup_ip_accounts["Account"].str.upper() == search_clean
+            filtered_related_login_accounts = pd.concat(
+                [filtered_related_login_accounts, signup_related_accounts_for_related_ip],
+                ignore_index=True
+            )
+
+        filtered_related_ips = build_related_ips_summary(filtered_related_login_accounts)
+
+        filtered_login_ips = login_ips_without_relationships[
+            login_ips_without_relationships["Account"].str.upper() == search_clean
+        ][["Login IP", "Last Login", "Location"]]
+
+        filtered_signup_accounts_for_summary = signup_ip_accounts[
+            signup_ip_accounts["Signup IP"].isin(signup_ip_matches)
+        ]
+
+        filtered_signup_ips = build_signup_ips_summary(filtered_signup_accounts_for_summary)
+
+        st.session_state.filtered_related_login_accounts = filtered_related_login_accounts
+        st.session_state.filtered_related_ips = filtered_related_ips
+        st.session_state.filtered_login_ips = filtered_login_ips
+        st.session_state.filtered_signup_ips = filtered_signup_ips
+
+    else:
+        filtered_login_ip_accounts = login_ip_accounts[
+            login_ip_accounts["Login IP"].str.contains(search_clean, case=False, na=False)
+        ]
+
+        standalone_login_accounts = login_ips_without_relationships[
+            login_ips_without_relationships["Login IP"].str.contains(search_clean, case=False, na=False)
+        ][["Account", "Customer", "Login IP", "Location", "Last Login"]].copy()
+
+        if not standalone_login_accounts.empty:
+            standalone_login_accounts["Risk Account"] = False
+
+            standalone_login_accounts = standalone_login_accounts[
+                ["Account", "Customer", "Login IP", "Last Login", "Risk Account"]
             ]
 
-            related_ip_matches = account_login_rows["Login IP"].unique().tolist()
-            signup_ip_matches = account_signup_row["Signup IP"].unique().tolist()
+        filtered_login_ip_accounts = filtered_login_ip_accounts[
+            ["Account", "Customer", "Login IP", "Last Login", "Risk Account"]
+        ]
 
-            signup_ip_as_login_rows = login_ip_accounts[
-                login_ip_accounts["Login IP"].isin(signup_ip_matches)
-            ]
+        filtered_login_ip_accounts = pd.concat(
+            [filtered_login_ip_accounts, standalone_login_accounts],
+            ignore_index=True
+        )
 
-            signup_ip_as_signup_rows = signup_ip_accounts[
-                signup_ip_accounts["Signup IP"].isin(signup_ip_matches)
-            ]
+        filtered_signup_accounts = signup_ip_accounts[
+            signup_ip_accounts["Signup IP"].str.contains(search_clean, case=False, na=False)
+        ]
 
-            signup_ip_has_login_relation = not signup_ip_as_login_rows.empty
-            signup_ip_has_signup_relation = signup_ip_as_signup_rows["Account"].nunique() > 1
-
-            if signup_ip_has_login_relation or signup_ip_has_signup_relation:
-                related_ip_matches = list(set(related_ip_matches + signup_ip_matches))
-
-            filtered_related_login_accounts = login_ip_accounts[
-                login_ip_accounts["Login IP"].isin(related_ip_matches)
-            ]
-
-            signup_related_accounts_for_related_ip = signup_ip_accounts[
-                signup_ip_accounts["Signup IP"].isin(related_ip_matches)
-            ].rename(columns={
-                "Signup IP": "Login IP",
-                "Created Date": "Last Login"
-            })
-
-            if not signup_related_accounts_for_related_ip.empty:
-                signup_related_accounts_for_related_ip["Location"] = signup_related_accounts_for_related_ip["Country"]
-                signup_related_accounts_for_related_ip = signup_related_accounts_for_related_ip[
-                    ["Account", "Customer", "Login IP", "Location", "Risk Account", "Last Login"]
-                ]
-
-                filtered_related_login_accounts = pd.concat(
-                    [filtered_related_login_accounts, signup_related_accounts_for_related_ip],
-                    ignore_index=True
-                )
-
-            filtered_related_ips = build_related_ips_summary(filtered_related_login_accounts)
-
-            filtered_login_ips = login_ips_without_relationships[
-                login_ips_without_relationships["Account"].str.upper() == search_clean
-            ][["Login IP", "Last Login", "Location"]]
-
-            filtered_signup_accounts_for_summary = signup_ip_accounts[
-                signup_ip_accounts["Signup IP"].isin(signup_ip_matches)
-            ]
-
-            filtered_signup_ips = build_signup_ips_summary(filtered_signup_accounts_for_summary)
-
-            st.session_state.filtered_related_login_accounts = filtered_related_login_accounts
-            st.session_state.filtered_related_ips = filtered_related_ips
-            st.session_state.filtered_login_ips = filtered_login_ips
-            st.session_state.filtered_signup_ips = filtered_signup_ips
+        st.session_state.filtered_login_ip_accounts = filtered_login_ip_accounts
+        st.session_state.filtered_signup_accounts = filtered_signup_accounts
 
         else:
             filtered_login_ip_accounts = login_ip_accounts[
