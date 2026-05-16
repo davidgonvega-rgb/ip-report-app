@@ -389,7 +389,7 @@ else:
             help="Visual filter only. Not functional in this prototype version."
         )
 
-    if st.button("Search"):
+if st.button("Search"):
         st.session_state.last_search_type = search_type
         st.session_state.last_search_input = search_input
         st.session_state.search_executed = True
