@@ -304,14 +304,17 @@ if st.session_state.selected_ip is not None:
 # ---------------------------
 # MAIN PAGE
 # ---------------------------
-else:
-    st.title("IP Report")
-    st.subheader("Search by Account or IP")
 
     col1, col2 = st.columns([4, 1])
 
     with col2:
         st.image("betcrislogo.png", width=400)
+
+else:
+    st.title("IP Report")
+    st.subheader("Search by Account or IP")
+
+
 
     search_type = st.radio(
         "Search Type",
