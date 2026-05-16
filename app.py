@@ -268,33 +268,72 @@ def build_accounts_sharing_multiple_ips(filtered_login_accounts, searched_accoun
 # ---------------------------
 # DETAIL PAGE
 # ---------------------------
+# ---------------------------
+# DETAIL PAGE
+# ---------------------------
 if st.session_state.selected_ip is not None:
     selected_ip = st.session_state.selected_ip
-    selected_type = st.session_state.selected_ip_type
 
-    st.title("Signup IP Detail" if selected_type == "signup" else "Login IP Detail")
+    st.title("IP Detail")
+    st.subheader(f"IP: {selected_ip}")
 
-    if selected_type == "signup":
-        detail_df = signup_ip_accounts[signup_ip_accounts["Signup IP"] == selected_ip].copy()
-        detail_df = detail_df[["Account", "Customer", "Created Date", "Risk Account"]]
-    else:
-        detail_df = login_ip_accounts[login_ip_accounts["Login IP"] == selected_ip].copy()
-        detail_df = detail_df[["Account", "Customer", "Last Login", "Risk Account"]]
+    # ---------------------------
+    # LOGINS SECTION
+    # ---------------------------
+    st.markdown("## Logins")
 
-    st.subheader(f"Linked Accounts for IP: {selected_ip}")
+    login_detail_df = login_ip_accounts[
+        login_ip_accounts["Login IP"] == selected_ip
+    ].copy()
 
-    if not detail_df.empty:
+    if not login_detail_df.empty:
+        login_detail_df = login_detail_df[
+            ["Account", "Customer", "Last Login", "Risk Account"]
+        ]
+
         c1, c2 = st.columns(2)
         with c1:
-            st.metric("Linked Accounts", len(detail_df))
+            st.metric("Login Accounts", len(login_detail_df))
         with c2:
-            st.metric("Risk Accounts", int(detail_df["Risk Account"].sum()))
+            st.metric("Risk Accounts", int(login_detail_df["Risk Account"].sum()))
 
-        styled_df = add_row_numbers(detail_df).style.apply(highlight_risk_row, axis=1)
-        st.dataframe(styled_df, use_container_width=True)
-        st.caption("Accounts highlighted in red are risk accounts.")
+        styled_login_df = add_row_numbers(login_detail_df).style.apply(
+            highlight_risk_row,
+            axis=1
+        )
+        st.dataframe(styled_login_df, use_container_width=True)
     else:
-        st.warning("No linked accounts found for this IP.")
+        st.warning("No login accounts found for this IP.")
+
+    # ---------------------------
+    # SIGNUP SECTION
+    # ---------------------------
+    st.markdown("## Signup")
+
+    signup_detail_df = signup_ip_accounts[
+        signup_ip_accounts["Signup IP"] == selected_ip
+    ].copy()
+
+    if not signup_detail_df.empty:
+        signup_detail_df = signup_detail_df[
+            ["Account", "Customer", "Created Date", "Risk Account"]
+        ]
+
+        c3, c4 = st.columns(2)
+        with c3:
+            st.metric("Signup Accounts", len(signup_detail_df))
+        with c4:
+            st.metric("Risk Accounts", int(signup_detail_df["Risk Account"].sum()))
+
+        styled_signup_df = add_row_numbers(signup_detail_df).style.apply(
+            highlight_risk_row,
+            axis=1
+        )
+        st.dataframe(styled_signup_df, use_container_width=True)
+    else:
+        st.warning("No signup accounts found for this IP.")
+
+    st.caption("Accounts highlighted in red are risk accounts.")
 
     if st.button("Back to Search"):
         st.session_state.selected_ip = None
