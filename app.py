@@ -277,32 +277,34 @@ if st.session_state.selected_ip is not None:
     st.title("IP Detail")
     st.subheader(f"IP: {selected_ip}")
 
-    # ---------------------------
-    # LOGINS SECTION
-    # ---------------------------
-    st.markdown("## Logins")
-
     login_detail_df = login_ip_accounts[
         login_ip_accounts["Login IP"] == selected_ip
     ].copy()
+
+    signup_detail_df = signup_ip_accounts[
+        signup_ip_accounts["Signup IP"] == selected_ip
+    ].copy()
+
+    login_risk_count = int(login_detail_df["Risk Account"].sum()) if not login_detail_df.empty else 0
+    signup_risk_count = int(signup_detail_df["Risk Account"].sum()) if not signup_detail_df.empty else 0
+
+    c1, c2, c3 = st.columns(3)
+
+    with c1:
+        st.metric("Login Accounts", len(login_detail_df))
+
+    with c2:
+        st.metric("Signup Accounts", len(signup_detail_df))
+
+    with c3:
+        st.metric("Risk Accounts", login_risk_count + signup_risk_count)
+
+    st.markdown("## Logins")
 
     if not login_detail_df.empty:
         login_detail_df = login_detail_df[
             ["Account", "Customer", "Last Login", "Risk Account"]
         ]
-
-        signup_accounts_count = len(signup_detail_df)
-
-c1, c2, c3 = st.columns(3)
-
-with c1:
-    st.metric("Login Accounts", len(login_detail_df))
-
-with c2:
-    st.metric("Signup Accounts", signup_accounts_count)
-
-with c3:
-    st.metric("Risk Accounts", int(login_detail_df["Risk Account"].sum()))
 
         styled_login_df = add_row_numbers(login_detail_df).style.apply(
             highlight_risk_row,
@@ -311,6 +313,28 @@ with c3:
         st.dataframe(styled_login_df, use_container_width=True)
     else:
         st.warning("No login accounts found for this IP.")
+
+    st.markdown("## Signup")
+
+    if not signup_detail_df.empty:
+        signup_detail_df = signup_detail_df[
+            ["Account", "Customer", "Created Date", "Risk Account"]
+        ]
+
+        styled_signup_df = add_row_numbers(signup_detail_df).style.apply(
+            highlight_risk_row,
+            axis=1
+        )
+        st.dataframe(styled_signup_df, use_container_width=True)
+    else:
+        st.warning("No signup accounts found for this IP.")
+
+    st.caption("Accounts highlighted in red are risk accounts.")
+
+    if st.button("Back to Search"):
+        st.session_state.selected_ip = None
+        st.session_state.selected_ip_type = None
+        st.rerun()
 
     # ---------------------------
     # SIGNUP SECTION
