@@ -307,13 +307,28 @@ if st.session_state.selected_ip is not None:
 
 
 else:
-    st.title("IP Report")
-    st.subheader("Search by Account or IP")
+    top_col1, top_col2 = st.columns([6, 1])
 
-    col1, col2 = st.columns([4, 1])
+    with top_col1:
+        st.title("IP Report")
+        st.subheader("Search by Account or IP")
 
-    with col2:
-        st.image("betcrislogo.png", width=250)
+    with top_col2:
+        st.markdown(
+            """
+            <div style='text-align: right;'>
+            """,
+            unsafe_allow_html=True
+        )
+
+        st.image("betcrislogo.png", width=220)
+
+        st.markdown(
+            """
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
 
     search_type = st.radio(
         "Search Type",
