@@ -397,33 +397,72 @@ else:
         search_clean = search_input.strip().upper()
 
         if search_type == "Account":
-            account_login_rows = login_ip_accounts[
-                login_ip_accounts["Account"].str.upper() == search_clean
-            ]
+account_login_rows = login_ip_accounts[
+    login_ip_accounts["Account"].str.upper() == search_clean
+]
 
-            related_ip_matches = account_login_rows["Login IP"].unique().tolist()
+account_signup_row = signup_ip_accounts[
+    signup_ip_accounts["Account"].str.upper() == search_clean
+]
 
-            filtered_related_login_accounts = login_ip_accounts[
-                login_ip_accounts["Login IP"].isin(related_ip_matches)
-            ]
+# Login IPs usados por la cuenta consultada
+related_ip_matches = account_login_rows["Login IP"].unique().tolist()
 
-            filtered_related_ips = build_related_ips_summary(filtered_related_login_accounts)
+# Signup IP único de la cuenta consultada
+signup_ip_matches = account_signup_row["Signup IP"].unique().tolist()
 
-            filtered_login_ips = login_ips_without_relationships[
-                login_ips_without_relationships["Account"].str.upper() == search_clean
-            ][["Login IP", "Last Login", "Location"]]
+# Buscar si el Signup IP también fue usado como Login IP por otras cuentas
+signup_ip_as_login_rows = login_ip_accounts[
+    login_ip_accounts["Login IP"].isin(signup_ip_matches)
+]
 
-            account_signup_row = signup_ip_accounts[
-                signup_ip_accounts["Account"].str.upper() == search_clean
-            ]
+# Buscar si el Signup IP fue usado como Signup IP por otras cuentas
+signup_ip_as_signup_rows = signup_ip_accounts[
+    signup_ip_accounts["Signup IP"].isin(signup_ip_matches)
+]
 
-            signup_ip_matches = account_signup_row["Signup IP"].unique().tolist()
+# Si el Signup IP tiene relación con otras cuentas, también se agrega al listado principal
+signup_ip_has_login_relation = not signup_ip_as_login_rows.empty
+signup_ip_has_signup_relation = signup_ip_as_signup_rows["Account"].nunique() > 1
 
-            filtered_signup_accounts_for_summary = signup_ip_accounts[
-                signup_ip_accounts["Signup IP"].isin(signup_ip_matches)
-            ]
+if signup_ip_has_login_relation or signup_ip_has_signup_relation:
+    related_ip_matches = list(set(related_ip_matches + signup_ip_matches))
 
-            filtered_signup_ips = build_signup_ips_summary(filtered_signup_accounts_for_summary)
+# Login IP accounts relacionados con los IPs detectados
+filtered_related_login_accounts = login_ip_accounts[
+    login_ip_accounts["Login IP"].isin(related_ip_matches)
+]
+
+# Agregar cuentas que comparten Signup IP como si fueran relación del IP
+signup_related_accounts_for_related_ip = signup_ip_accounts[
+    signup_ip_accounts["Signup IP"].isin(related_ip_matches)
+].rename(columns={
+    "Signup IP": "Login IP",
+    "Created Date": "Last Login"
+})
+
+if not signup_related_accounts_for_related_ip.empty:
+    signup_related_accounts_for_related_ip["Location"] = signup_related_accounts_for_related_ip["Country"]
+    signup_related_accounts_for_related_ip = signup_related_accounts_for_related_ip[
+        ["Account", "Customer", "Login IP", "Location", "Risk Account", "Last Login"]
+    ]
+
+    filtered_related_login_accounts = pd.concat(
+        [filtered_related_login_accounts, signup_related_accounts_for_related_ip],
+        ignore_index=True
+    )
+
+filtered_related_ips = build_related_ips_summary(filtered_related_login_accounts)
+
+filtered_login_ips = login_ips_without_relationships[
+    login_ips_without_relationships["Account"].str.upper() == search_clean
+][["Login IP", "Last Login", "Location"]]
+
+filtered_signup_accounts_for_summary = signup_ip_accounts[
+    signup_ip_accounts["Signup IP"].isin(signup_ip_matches)
+]
+
+filtered_signup_ips = build_signup_ips_summary(filtered_signup_accounts_for_summary)
 
             st.session_state.filtered_related_login_accounts = filtered_related_login_accounts
             st.session_state.filtered_related_ips = filtered_related_ips
