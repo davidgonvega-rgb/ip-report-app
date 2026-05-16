@@ -321,7 +321,7 @@ else:
             unsafe_allow_html=True
         )
 
-        st.image("betcrislogo.png", width=400)
+        st.image("betcrislogo.png", width=450)
 
         st.markdown(
             """
