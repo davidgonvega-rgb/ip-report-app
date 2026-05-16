@@ -310,11 +310,10 @@ else:
     st.title("IP Report")
     st.subheader("Search by Account or IP")
 
-        col1, col2 = st.columns([4, 1])
+    col1, col2 = st.columns([4, 1])
 
-        with col2:
-          st.image("betcrislogo.png", width=400)
-
+    with col2:
+        st.image("betcrislogo.png", width=250)
 
     search_type = st.radio(
         "Search Type",
