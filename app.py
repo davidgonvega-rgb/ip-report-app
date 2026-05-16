@@ -291,11 +291,18 @@ if st.session_state.selected_ip is not None:
             ["Account", "Customer", "Last Login", "Risk Account"]
         ]
 
-        c1, c2 = st.columns(2)
-        with c1:
-            st.metric("Login Accounts", len(login_detail_df))
-        with c2:
-            st.metric("Risk Accounts", int(login_detail_df["Risk Account"].sum()))
+        signup_accounts_count = len(signup_detail_df)
+
+c1, c2, c3 = st.columns(3)
+
+with c1:
+    st.metric("Login Accounts", len(login_detail_df))
+
+with c2:
+    st.metric("Signup Accounts", signup_accounts_count)
+
+with c3:
+    st.metric("Risk Accounts", int(login_detail_df["Risk Account"].sum()))
 
         styled_login_df = add_row_numbers(login_detail_df).style.apply(
             highlight_risk_row,
@@ -319,12 +326,7 @@ if st.session_state.selected_ip is not None:
             ["Account", "Customer", "Created Date", "Risk Account"]
         ]
 
-        c3, c4 = st.columns(2)
-        with c3:
-            st.metric("Signup Accounts", len(signup_detail_df))
-        with c4:
-            st.metric("Risk Accounts", int(signup_detail_df["Risk Account"].sum()))
-
+       
         styled_signup_df = add_row_numbers(signup_detail_df).style.apply(
             highlight_risk_row,
             axis=1
