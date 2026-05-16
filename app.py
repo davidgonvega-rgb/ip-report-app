@@ -442,7 +442,7 @@ else:
             with s3:
                 st.metric("Login IPs without Relationships", len(filtered_login_ips))
             with s4:
-                st.metric("Signup IPs", len(filtered_signup_ips))
+                st.metric("Signup IP", len(filtered_signup_ips))
 
             st.markdown("## IPs with Related Accounts")
             if not filtered_related_ips.empty:
