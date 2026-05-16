@@ -396,7 +396,7 @@ else:
 
         search_clean = search_input.strip().upper()
 
-               if search_type == "Account":
+    if search_type == "Account":
             account_login_rows = login_ip_accounts[
                 login_ip_accounts["Account"].str.upper() == search_clean
             ]
