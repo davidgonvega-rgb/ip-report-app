@@ -336,35 +336,6 @@ if st.session_state.selected_ip is not None:
         st.session_state.selected_ip_type = None
         st.rerun()
 
-    # ---------------------------
-    # SIGNUP SECTION
-    # ---------------------------
-    st.markdown("## Signup")
-
-    signup_detail_df = signup_ip_accounts[
-        signup_ip_accounts["Signup IP"] == selected_ip
-    ].copy()
-
-    if not signup_detail_df.empty:
-        signup_detail_df = signup_detail_df[
-            ["Account", "Customer", "Created Date", "Risk Account"]
-        ]
-
-       
-        styled_signup_df = add_row_numbers(signup_detail_df).style.apply(
-            highlight_risk_row,
-            axis=1
-        )
-        st.dataframe(styled_signup_df, use_container_width=True)
-    else:
-        st.warning("No signup accounts found for this IP.")
-
-    st.caption("Accounts highlighted in red are risk accounts.")
-
-    if st.button("Back to Search"):
-        st.session_state.selected_ip = None
-        st.session_state.selected_ip_type = None
-        st.rerun()
 
 # ---------------------------
 # MAIN PAGE
