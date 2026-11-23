@@ -336,7 +336,7 @@ else:
 
     with top_col2:
         st.markdown("<div style='text-align: right;'>", unsafe_allow_html=True)
-        st.image("betcrislogo.png", width=450)
+        st.image("BAS.logo.png", width=450)
         st.markdown("</div>", unsafe_allow_html=True)
 
     search_type = st.radio(
@@ -540,4 +540,5 @@ else:
                 st.dataframe(styled_df, use_container_width=True)
             else:
                 st.warning("No accounts found using this IP as Signup IP.")
+
 
