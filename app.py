@@ -4,7 +4,7 @@ from datetime import date
 from pathlib import Path
 import base64
 
-st.set_page_config(page_title="IP Report", layout="wide")
+st.set_page_config(page_title="IP Report", layout="wide", initial_sidebar_state="expanded")
 
 # Background.png must be placed in the same GitHub folder as this script.
 @st.cache_data(show_spinner=False)
@@ -20,19 +20,27 @@ if background:
         f"""
         <style>
         .stApp {{
+            background-color: #190723;
             background-image: url("data:image/png;base64,{background}");
             background-position: center top;
             background-repeat: no-repeat;
-            background-size: cover;
+            background-size: 100% 100%;
             background-attachment: fixed;
-            color: #ffffff;
+            color: white;
         }}
         [data-testid="stHeader"] {{ background: transparent; }}
         [data-testid="stSidebar"] {{
-            background: rgba(30, 9, 47, 0.92);
+            background-color: #240b32;
+            background-image: url("data:image/png;base64,{background}");
+            background-position: left top;
+            background-repeat: no-repeat;
+            background-size: 1100px auto;
+        }}
+        [data-testid="stSidebar"] [data-testid="stSidebarUserContent"] {{
+            padding-top: 75px;
         }}
         [data-testid="stMainBlockContainer"] {{
-            background: rgba(25, 7, 39, 0.35);
+            background: rgba(25, 7, 39, 0.18);
             border-radius: 16px;
             padding-top: 2.5rem;
         }}
@@ -43,6 +51,12 @@ if background:
             padding: 12px;
             border-radius: 10px;
         }}
+        .stButton > button {{
+            background: #f7f2fb;
+            color: #2a1039;
+            border: 1px solid #e1cde8;
+        }}
+        .stButton > button p {{ color: #2a1039 !important; }}
         </style>
         """,
         unsafe_allow_html=True,
