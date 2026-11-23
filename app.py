@@ -62,26 +62,42 @@ if background:
 else:
     st.warning("Background.png was not found beside the app script in the repository.")
 
-# Position sidebar toggle controls independently from the background CSS.
-# Plain string (not an f-string): CSS braces remain literal.
+# Keep the native Streamlit sidebar controls vertically centered.
+# Both the expanded sidebar header and the collapsed control must be moved:
+# moving only the button leaves its parent at the top of the page.
 st.markdown("""
 <style>
-[data-testid="stSidebar"] [data-testid="stSidebarCollapseButton"] {
+/* Expanded sidebar: reposition the entire header containing the collapse button. */
+section[data-testid="stSidebar"] [data-testid="stSidebarHeader"] {
     position: fixed !important;
     top: 50vh !important;
-    left: 250px !important;
-    transform: translateY(-50%) !important;
-    z-index: 999999 !important;
+    left: 0 !important;
+    width: 285px !important;
+    height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    z-index: 100000 !important;
 }
+section[data-testid="stSidebar"] [data-testid="stSidebarCollapseButton"] {
+    position: absolute !important;
+    top: 0 !important;
+    right: 4px !important;
+    left: auto !important;
+    transform: translateY(-50%) !important;
+    z-index: 100001 !important;
+}
+/* Collapsed sidebar: reposition the entire floating control. */
 [data-testid="stSidebarCollapsedControl"] {
     position: fixed !important;
     top: 50vh !important;
     left: 8px !important;
+    right: auto !important;
     transform: translateY(-50%) !important;
-    z-index: 999999 !important;
+    z-index: 100001 !important;
 }
-[data-testid="stSidebarCollapsedControl"] button,
-[data-testid="stSidebarCollapseButton"] button {
+/* Alternative sidebar button wrapper used by some Streamlit releases. */
+section[data-testid="stSidebar"] [data-testid="stSidebarHeader"] button {
     visibility: visible !important;
 }
 </style>
