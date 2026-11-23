@@ -37,6 +37,25 @@ if background:
         [data-testid="stSidebarCollapsedControl"],
         [data-testid="stSidebarCollapseButton"],
         [data-testid="stSidebarNav"] {{ visibility: visible; }}
+        /* Keep the native sidebar toggle vertically centered in both states. */
+        [data-testid="stSidebar"] [data-testid="stSidebarCollapseButton"] {{
+            position: absolute !important;
+            top: 50vh !important;
+            right: 0.5rem !important;
+            transform: translateY(-50%) !important;
+            z-index: 100000 !important;
+        }}
+        [data-testid="stSidebarCollapsedControl"] {{
+            position: fixed !important;
+            top: 50vh !important;
+            left: 0.5rem !important;
+            transform: translateY(-50%) !important;
+            z-index: 100000 !important;
+        }}
+        [data-testid="stSidebar"] button,
+        [data-testid="stSidebarCollapsedControl"] button {{
+            cursor: pointer;
+        }}
         [data-testid="stMainBlockContainer"] {{
             background: rgba(25, 7, 39, 0.18);
             border-radius: 16px;
