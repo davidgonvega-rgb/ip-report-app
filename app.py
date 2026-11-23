@@ -29,7 +29,7 @@ if background:
             color: white;
         }}
         [data-testid="stHeader"] {{ background: transparent; }}
-        .ip-nav-panel {
+        .ip-nav-panel {{
             background: rgba(32, 10, 48, 0.82);
             border: 1px solid rgba(255, 255, 255, 0.16);
             border-radius: 12px;
@@ -37,12 +37,12 @@ if background:
             margin-top: 14px;
             color: #fff;
             min-height: 360px;
-        }
-        .ip-nav-brand { font-size: 20px; font-weight: 700; margin-bottom: 24px; }
-        .ip-nav-title { font-size: 19px; font-weight: 700; }
-        .ip-nav-subtitle { opacity: .85; margin-top: 5px; }
-        .ip-nav-panel hr { border: 0; border-top: 1px solid #775582; margin: 20px 0; }
-        .ip-nav-panel p { line-height: 1.9; font-size: 13px; }
+        }}
+        .ip-nav-brand {{ font-size: 20px; font-weight: 700; margin-bottom: 24px; }}
+        .ip-nav-title {{ font-size: 19px; font-weight: 700; }}
+        .ip-nav-subtitle {{ opacity: .85; margin-top: 5px; }}
+        .ip-nav-panel hr {{ border: 0; border-top: 1px solid #775582; margin: 20px 0; }}
+        .ip-nav-panel p {{ line-height: 1.9; font-size: 13px; }}
         [data-testid="stMainBlockContainer"] {{
             background: rgba(25, 7, 39, 0.18);
             border-radius: 16px;
