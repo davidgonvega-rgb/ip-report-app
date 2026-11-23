@@ -4,7 +4,7 @@ from datetime import date
 from pathlib import Path
 import base64
 
-st.set_page_config(page_title="IP Report", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="IP Report", layout="wide", initial_sidebar_state="expanded")
 
 # Background.png must be placed in the same GitHub folder as this script.
 @st.cache_data(show_spinner=False)
@@ -29,20 +29,14 @@ if background:
             color: white;
         }}
         [data-testid="stHeader"] {{ background: transparent; }}
-        .ip-nav-panel {{
-            background: rgba(32, 10, 48, 0.82);
-            border: 1px solid rgba(255, 255, 255, 0.16);
-            border-radius: 12px;
-            padding: 20px 15px;
-            margin-top: 14px;
-            color: #fff;
-            min-height: 360px;
+        [data-testid="stSidebar"] {{
+            background: rgba(32, 10, 48, 0.94);
+            border-right: 1px solid rgba(255,255,255,0.15);
         }}
-        .ip-nav-brand {{ font-size: 20px; font-weight: 700; margin-bottom: 24px; }}
-        .ip-nav-title {{ font-size: 19px; font-weight: 700; }}
-        .ip-nav-subtitle {{ opacity: .85; margin-top: 5px; }}
-        .ip-nav-panel hr {{ border: 0; border-top: 1px solid #775582; margin: 20px 0; }}
-        .ip-nav-panel p {{ line-height: 1.9; font-size: 13px; }}
+        [data-testid="stSidebar"] * {{ color: #ffffff; }}
+        [data-testid="stSidebarCollapsedControl"],
+        [data-testid="stSidebarCollapseButton"],
+        [data-testid="stSidebarNav"] {{ visibility: visible; }}
         [data-testid="stMainBlockContainer"] {{
             background: rgba(25, 7, 39, 0.18);
             border-radius: 16px;
@@ -68,541 +62,539 @@ if background:
 else:
     st.warning("Background.png was not found beside the app script in the repository.")
 
-# Persistent left navigation: unlike st.sidebar, this stays visible even when
-# Streamlit Cloud or the browser hides the native sidebar toggle.
-nav_col, content_col = st.columns([1.1, 5.4], gap="large")
-with nav_col:
-    st.markdown("""<div class="ip-nav-panel">
-        <div class="ip-nav-brand">BetAnything</div>
-        <div class="ip-nav-title">IP Intelligence Tool</div>
-        <div class="ip-nav-subtitle">Prototype</div>
-        <hr>
-        <strong>Search Modes</strong><p>By Account<br>By IP</p>
-        <hr>
-        <strong>Environment</strong><p>Mock Data / Demo Version 1.0</p>
-    </div>""", unsafe_allow_html=True)
+# Native Streamlit sidebar: expandable and collapsible using the built-in control.
+with st.sidebar:
+    st.title("BetAnything")
+    st.title("IP Intelligence Tool")
+    st.markdown("Prototype")
+    st.markdown("---")
+    st.write("**Search Modes**")
+    st.write("- By Account")
+    st.write("- By IP")
+    st.markdown("---")
+    st.write("**Environment**")
+    st.write("Mock Data / Demo Version 1.0")
 
-with content_col:
-    # ---------------------------
-    # SESSION STATE
-    # ---------------------------
-    for key, default in {
-        "selected_ip": None,
-        "selected_ip_type": None,
-        "search_executed": False,
-        "last_search_type": "Account",
-        "last_search_input": "",
-    }.items():
-        if key not in st.session_state:
-            st.session_state[key] = default
+# ---------------------------
+# SESSION STATE
+# ---------------------------
+for key, default in {
+    "selected_ip": None,
+    "selected_ip_type": None,
+    "search_executed": False,
+    "last_search_type": "Account",
+    "last_search_input": "",
+}.items():
+    if key not in st.session_state:
+        st.session_state[key] = default
 
-    for key in [
-        "filtered_related_ips",
-        "filtered_login_ips",
-        "filtered_signup_ips",
-        "filtered_login_ip_accounts",
-        "filtered_signup_accounts",
-        "filtered_related_login_accounts"
-    ]:
-        if key not in st.session_state:
-            st.session_state[key] = pd.DataFrame()
+for key in [
+    "filtered_related_ips",
+    "filtered_login_ips",
+    "filtered_signup_ips",
+    "filtered_login_ip_accounts",
+    "filtered_signup_accounts",
+    "filtered_related_login_accounts"
+]:
+    if key not in st.session_state:
+        st.session_state[key] = pd.DataFrame()
 
-    # ---------------------------
-    # DATA
-    # ---------------------------
-    login_ip_accounts = pd.DataFrame({
-        "Account": [
-            "A20456","A10234","A30567","A40678",
-            "A40023","A40021","A40022","A40024","A99001",
-            "A20456","A40023","A51002","A51003",
-            "A40023","A70001","A70002",
-            "A20456","A40023","A80012","A80014",
-            "A40023","A20456","A90022",
-            "A20456","A91001","A91002","A91003",
-            "A40023","A92001","A92002","A99002",
-            "A20456","A93001","A93002","A93003",
-            "A40023","A94001","A94002","A94003","A94004"
-        ],
-        "Customer": [
-            "Bad Bunny","Taylor Swift","Ariana Grande","Rihanna",
-            "Michael Jackson","Freddie Mercury","Prince","Madonna","Risk User 1",
-            "Bad Bunny","Michael Jackson","Frank Sinatra","Johnny Cash",
-            "Michael Jackson","Elton John","Bob Marley",
-            "Bad Bunny","Michael Jackson","Jimi Hendrix","James Brown",
-            "Michael Jackson","Bad Bunny","Eric Clapton",
-            "Bad Bunny","Kendrick Lamar","David Bowie","Mick Jagger",
-            "Michael Jackson","Chris Cornell","Axl Rose","Risk User 2",
-            "Bad Bunny","Bruce Dickinson","Paul McCartney","Roger Waters",
-            "Michael Jackson","Lemmy","Ozzy Osbourne","Sebastian Bach","Geddy Lee"
-        ],
-        "Login IP": [
-            "563.123.256.32","563.123.256.32","563.123.256.32","563.123.256.32",
-            "563.123.256.33","563.123.256.33","563.123.256.33","563.123.256.33","563.123.256.33",
-            "563.123.256.34","563.123.256.34","563.123.256.34","563.123.256.34",
-            "563.123.256.35","563.123.256.35","563.123.256.35",
-            "563.123.256.36","563.123.256.36","563.123.256.36","563.123.256.36",
-            "563.123.256.37","563.123.256.37","563.123.256.37",
-            "563.123.256.38","563.123.256.38","563.123.256.38","563.123.256.38",
-            "563.123.256.39","563.123.256.39","563.123.256.39","563.123.256.39",
-            "563.123.256.40","563.123.256.40","563.123.256.40","563.123.256.40",
-            "563.123.256.41","563.123.256.41","563.123.256.41","563.123.256.41","563.123.256.41"
-        ],
-        "Location": [
-            "Lima, Perú","Lima, Perú","Lima, Perú","Lima, Perú",
-            "Guatemala City, Guatemala","Guatemala City, Guatemala","Guatemala City, Guatemala","Guatemala City, Guatemala","Guatemala City, Guatemala",
-            "Santiago, Chile","Santiago, Chile","Santiago, Chile","Santiago, Chile",
-            "Panamá City, Panamá","Panamá City, Panamá","Panamá City, Panamá",
-            "Ciudad de México, México","Ciudad de México, México","Ciudad de México, México","Ciudad de México, México",
-            "San José, Costa Rica","San José, Costa Rica","San José, Costa Rica",
-            "Managua, Nicaragua","Managua, Nicaragua","Managua, Nicaragua","Managua, Nicaragua",
-            "Tegucigalpa, Honduras","Tegucigalpa, Honduras","Tegucigalpa, Honduras","Tegucigalpa, Honduras",
-            "Quito, Ecuador","Quito, Ecuador","Quito, Ecuador","Quito, Ecuador",
-            "San Pedro Sula, Honduras","San Pedro Sula, Honduras","San Pedro Sula, Honduras","San Pedro Sula, Honduras","San Pedro Sula, Honduras"
-        ],
-        "Risk Account": [
-            False,False,False,False,
-            False,False,False,False,True,
-            False,False,True,False,
-            False,False,True,
-            False,False,False,False,
-            False,False,False,
-            False,False,True,False,
-            False,False,False,True,
-            False,False,False,True,
-            False,False,False,True,False
-        ],
-        "Last Login": [
-            "2025-01-17","2025-01-17","2025-01-17","2025-01-17",
-            "2025-01-20","2025-01-20","2025-01-20","2025-01-20","2025-01-20",
-            "2025-02-01","2025-02-01","2025-02-01","2025-02-01",
-            "2025-02-10","2025-02-10","2025-02-10",
-            "2025-03-05","2025-03-05","2025-03-05","2025-03-05",
-            "2025-03-18","2025-03-18","2025-03-18",
-            "2025-04-14","2025-04-14","2025-04-14","2025-04-14",
-            "2025-05-19","2025-05-19","2025-05-19","2025-05-19",
-            "2025-06-02","2025-06-02","2025-06-02","2025-06-02",
-            "2025-07-21","2025-07-21","2025-07-21","2025-07-21","2025-07-21"
-        ]
-    })
+# ---------------------------
+# DATA
+# ---------------------------
+login_ip_accounts = pd.DataFrame({
+    "Account": [
+        "A20456","A10234","A30567","A40678",
+        "A40023","A40021","A40022","A40024","A99001",
+        "A20456","A40023","A51002","A51003",
+        "A40023","A70001","A70002",
+        "A20456","A40023","A80012","A80014",
+        "A40023","A20456","A90022",
+        "A20456","A91001","A91002","A91003",
+        "A40023","A92001","A92002","A99002",
+        "A20456","A93001","A93002","A93003",
+        "A40023","A94001","A94002","A94003","A94004"
+    ],
+    "Customer": [
+        "Bad Bunny","Taylor Swift","Ariana Grande","Rihanna",
+        "Michael Jackson","Freddie Mercury","Prince","Madonna","Risk User 1",
+        "Bad Bunny","Michael Jackson","Frank Sinatra","Johnny Cash",
+        "Michael Jackson","Elton John","Bob Marley",
+        "Bad Bunny","Michael Jackson","Jimi Hendrix","James Brown",
+        "Michael Jackson","Bad Bunny","Eric Clapton",
+        "Bad Bunny","Kendrick Lamar","David Bowie","Mick Jagger",
+        "Michael Jackson","Chris Cornell","Axl Rose","Risk User 2",
+        "Bad Bunny","Bruce Dickinson","Paul McCartney","Roger Waters",
+        "Michael Jackson","Lemmy","Ozzy Osbourne","Sebastian Bach","Geddy Lee"
+    ],
+    "Login IP": [
+        "563.123.256.32","563.123.256.32","563.123.256.32","563.123.256.32",
+        "563.123.256.33","563.123.256.33","563.123.256.33","563.123.256.33","563.123.256.33",
+        "563.123.256.34","563.123.256.34","563.123.256.34","563.123.256.34",
+        "563.123.256.35","563.123.256.35","563.123.256.35",
+        "563.123.256.36","563.123.256.36","563.123.256.36","563.123.256.36",
+        "563.123.256.37","563.123.256.37","563.123.256.37",
+        "563.123.256.38","563.123.256.38","563.123.256.38","563.123.256.38",
+        "563.123.256.39","563.123.256.39","563.123.256.39","563.123.256.39",
+        "563.123.256.40","563.123.256.40","563.123.256.40","563.123.256.40",
+        "563.123.256.41","563.123.256.41","563.123.256.41","563.123.256.41","563.123.256.41"
+    ],
+    "Location": [
+        "Lima, Perú","Lima, Perú","Lima, Perú","Lima, Perú",
+        "Guatemala City, Guatemala","Guatemala City, Guatemala","Guatemala City, Guatemala","Guatemala City, Guatemala","Guatemala City, Guatemala",
+        "Santiago, Chile","Santiago, Chile","Santiago, Chile","Santiago, Chile",
+        "Panamá City, Panamá","Panamá City, Panamá","Panamá City, Panamá",
+        "Ciudad de México, México","Ciudad de México, México","Ciudad de México, México","Ciudad de México, México",
+        "San José, Costa Rica","San José, Costa Rica","San José, Costa Rica",
+        "Managua, Nicaragua","Managua, Nicaragua","Managua, Nicaragua","Managua, Nicaragua",
+        "Tegucigalpa, Honduras","Tegucigalpa, Honduras","Tegucigalpa, Honduras","Tegucigalpa, Honduras",
+        "Quito, Ecuador","Quito, Ecuador","Quito, Ecuador","Quito, Ecuador",
+        "San Pedro Sula, Honduras","San Pedro Sula, Honduras","San Pedro Sula, Honduras","San Pedro Sula, Honduras","San Pedro Sula, Honduras"
+    ],
+    "Risk Account": [
+        False,False,False,False,
+        False,False,False,False,True,
+        False,False,True,False,
+        False,False,True,
+        False,False,False,False,
+        False,False,False,
+        False,False,True,False,
+        False,False,False,True,
+        False,False,False,True,
+        False,False,False,True,False
+    ],
+    "Last Login": [
+        "2025-01-17","2025-01-17","2025-01-17","2025-01-17",
+        "2025-01-20","2025-01-20","2025-01-20","2025-01-20","2025-01-20",
+        "2025-02-01","2025-02-01","2025-02-01","2025-02-01",
+        "2025-02-10","2025-02-10","2025-02-10",
+        "2025-03-05","2025-03-05","2025-03-05","2025-03-05",
+        "2025-03-18","2025-03-18","2025-03-18",
+        "2025-04-14","2025-04-14","2025-04-14","2025-04-14",
+        "2025-05-19","2025-05-19","2025-05-19","2025-05-19",
+        "2025-06-02","2025-06-02","2025-06-02","2025-06-02",
+        "2025-07-21","2025-07-21","2025-07-21","2025-07-21","2025-07-21"
+    ]
+})
 
-    login_ips_without_relationships = pd.DataFrame({
-        "Account": ["A20456","A20456","A20456","A40023","A40023","A40023","A10234","A94003","A70002"],
-        "Customer": ["Bad Bunny","Bad Bunny","Bad Bunny","Michael Jackson","Michael Jackson","Michael Jackson","Taylor Swift","Sebastian Bach","Bob Marley"],
-        "Login IP": ["563.230.092.22","563.230.092.77","563.230.092.78","563.230.092.41","563.230.092.88","563.230.092.89","563.230.092.21","563.230.092.90","563.230.092.91"],
-        "Last Login": ["2025-01-16","2025-02-16","2025-03-10","2025-02-14","2025-06-03","2025-06-15","2025-01-17","2025-07-01","2025-07-04"],
-        "Location": ["San José, Costa Rica","Lima, Perú","Quito, Ecuador","Ciudad de México, México","Quito, Ecuador","Panamá City, Panamá","San José, Costa Rica","Guatemala City, Guatemala","Managua, Nicaragua"]
-    })
+login_ips_without_relationships = pd.DataFrame({
+    "Account": ["A20456","A20456","A20456","A40023","A40023","A40023","A10234","A94003","A70002"],
+    "Customer": ["Bad Bunny","Bad Bunny","Bad Bunny","Michael Jackson","Michael Jackson","Michael Jackson","Taylor Swift","Sebastian Bach","Bob Marley"],
+    "Login IP": ["563.230.092.22","563.230.092.77","563.230.092.78","563.230.092.41","563.230.092.88","563.230.092.89","563.230.092.21","563.230.092.90","563.230.092.91"],
+    "Last Login": ["2025-01-16","2025-02-16","2025-03-10","2025-02-14","2025-06-03","2025-06-15","2025-01-17","2025-07-01","2025-07-04"],
+    "Location": ["San José, Costa Rica","Lima, Perú","Quito, Ecuador","Ciudad de México, México","Quito, Ecuador","Panamá City, Panamá","San José, Costa Rica","Guatemala City, Guatemala","Managua, Nicaragua"]
+})
 
-    signup_ip_accounts = pd.DataFrame({
-        "Account": ["A20456","A10234","A30567","A40023","A40021","A99001","A51002","A80013","A94003","A94005"],
-        "Customer": ["Bad Bunny","Taylor Swift","Ariana Grande","Michael Jackson","Freddie Mercury","Risk User 1","Frank Sinatra","Stevie Wonder","Sebastian Bach","Steven Tyler"],
-        "Signup IP": ["563.111.111.10","563.111.111.10","563.111.111.10","563.111.111.20","563.111.111.20","563.111.111.20","563.111.111.30","563.111.111.40","563.111.111.50","563.111.111.50"],
-        "Country": ["Perú","Ecuador","Honduras","Guatemala","México","Costa Rica","Chile","Rep Dominicana","Honduras","Perú"],
-        "Risk Account": [False,False,False,False,False,True,True,True,True,False],
-        "Created Date": ["2025-01-05","2025-01-06","2025-01-07","2025-02-10","2025-02-11","2025-02-12","2025-03-01","2025-03-14","2025-04-20","2025-04-22"]
-    })
+signup_ip_accounts = pd.DataFrame({
+    "Account": ["A20456","A10234","A30567","A40023","A40021","A99001","A51002","A80013","A94003","A94005"],
+    "Customer": ["Bad Bunny","Taylor Swift","Ariana Grande","Michael Jackson","Freddie Mercury","Risk User 1","Frank Sinatra","Stevie Wonder","Sebastian Bach","Steven Tyler"],
+    "Signup IP": ["563.111.111.10","563.111.111.10","563.111.111.10","563.111.111.20","563.111.111.20","563.111.111.20","563.111.111.30","563.111.111.40","563.111.111.50","563.111.111.50"],
+    "Country": ["Perú","Ecuador","Honduras","Guatemala","México","Costa Rica","Chile","Rep Dominicana","Honduras","Perú"],
+    "Risk Account": [False,False,False,False,False,True,True,True,True,False],
+    "Created Date": ["2025-01-05","2025-01-06","2025-01-07","2025-02-10","2025-02-11","2025-02-12","2025-03-01","2025-03-14","2025-04-20","2025-04-22"]
+})
 
-    # ---------------------------
-    # HELPERS
-    # ---------------------------
-    def add_row_numbers(df):
-        df = df.copy()
-        df.index = range(1, len(df) + 1)
-        return df
+# ---------------------------
+# HELPERS
+# ---------------------------
+def add_row_numbers(df):
+    df = df.copy()
+    df.index = range(1, len(df) + 1)
+    return df
 
-    def highlight_risk_row(row):
-        if row.get("Risk Account") == True:
-            return ['background-color: #f8d7da'] * len(row)
-        return [''] * len(row)
+def highlight_risk_row(row):
+    if row.get("Risk Account") == True:
+        return ['background-color: #f8d7da'] * len(row)
+    return [''] * len(row)
 
-    def box_style(is_risk: bool) -> str:
-        if is_risk:
-            return "background-color:#f8d7da; padding:8px; border-radius:4px;"
-        return "background-color:#ffffff; padding:8px; border-radius:4px; border:1px solid #eee;"
+def box_style(is_risk: bool) -> str:
+    if is_risk:
+        return "background-color:#f8d7da; padding:8px; border-radius:4px;"
+    return "background-color:#ffffff; padding:8px; border-radius:4px; border:1px solid #eee;"
 
-    def build_related_ips_summary(filtered_login_accounts):
-        if filtered_login_accounts.empty:
-            return pd.DataFrame()
+def build_related_ips_summary(filtered_login_accounts):
+    if filtered_login_accounts.empty:
+        return pd.DataFrame()
 
-        grouped = (
-            filtered_login_accounts.groupby("Login IP")
-            .agg(
-                Related_Accounts=("Account", "nunique"),
-                Location=("Location", "first"),
-                Has_Risk_Account=("Risk Account", "any")
-            )
-            .reset_index()
-            .rename(columns={
-                "Login IP": "IP Address",
-                "Related_Accounts": "Related Accounts",
-                "Has_Risk_Account": "Has Risk Account"
-            })
+    grouped = (
+        filtered_login_accounts.groupby("Login IP")
+        .agg(
+            Related_Accounts=("Account", "nunique"),
+            Location=("Location", "first"),
+            Has_Risk_Account=("Risk Account", "any")
         )
+        .reset_index()
+        .rename(columns={
+            "Login IP": "IP Address",
+            "Related_Accounts": "Related Accounts",
+            "Has_Risk_Account": "Has Risk Account"
+        })
+    )
 
-        grouped = grouped[grouped["Related Accounts"] > 1]
-        return grouped.sort_values("IP Address").reset_index(drop=True)
+    grouped = grouped[grouped["Related Accounts"] > 1]
+    return grouped.sort_values("IP Address").reset_index(drop=True)
 
-    def build_signup_ips_summary(filtered_signup_accounts):
-        if filtered_signup_accounts.empty:
-            return pd.DataFrame()
+def build_signup_ips_summary(filtered_signup_accounts):
+    if filtered_signup_accounts.empty:
+        return pd.DataFrame()
 
-        grouped = (
-            filtered_signup_accounts.groupby("Signup IP")
-            .agg(
-                Related_Accounts=("Account", "nunique"),
-                Has_Risk_Account=("Risk Account", "any")
-            )
-            .reset_index()
-            .rename(columns={
-                "Related_Accounts": "Related Accounts",
-                "Has_Risk_Account": "Has Risk Account"
-            })
+    grouped = (
+        filtered_signup_accounts.groupby("Signup IP")
+        .agg(
+            Related_Accounts=("Account", "nunique"),
+            Has_Risk_Account=("Risk Account", "any")
         )
+        .reset_index()
+        .rename(columns={
+            "Related_Accounts": "Related Accounts",
+            "Has_Risk_Account": "Has Risk Account"
+        })
+    )
 
-        return grouped.sort_values("Signup IP").reset_index(drop=True)
+    return grouped.sort_values("Signup IP").reset_index(drop=True)
 
-    def show_ip_summary_table(df, ip_column, related_column, info_column=None, has_risk_column="Has Risk Account"):
-        display_df = add_row_numbers(df)
+def show_ip_summary_table(df, ip_column, related_column, info_column=None, has_risk_column="Has Risk Account"):
+    display_df = add_row_numbers(df)
 
-        if info_column and info_column in display_df.columns:
-            header_cols = st.columns([1, 3, 2, 3, 2])
-            header_cols[0].markdown("**#**")
-            header_cols[1].markdown(f"**{ip_column}**")
-            header_cols[2].markdown(f"**{related_column}**")
-            header_cols[3].markdown(f"**{info_column}**")
-            header_cols[4].markdown("**Details**")
+    if info_column and info_column in display_df.columns:
+        header_cols = st.columns([1, 3, 2, 3, 2])
+        header_cols[0].markdown("**#**")
+        header_cols[1].markdown(f"**{ip_column}**")
+        header_cols[2].markdown(f"**{related_column}**")
+        header_cols[3].markdown(f"**{info_column}**")
+        header_cols[4].markdown("**Details**")
 
-            for idx, row in display_df.iterrows():
-                row_cols = st.columns([1, 3, 2, 3, 2])
-                style = box_style(bool(row[has_risk_column]))
+        for idx, row in display_df.iterrows():
+            row_cols = st.columns([1, 3, 2, 3, 2])
+            style = box_style(bool(row[has_risk_column]))
 
-                row_cols[0].markdown(f"<div style='{style}'>{idx}</div>", unsafe_allow_html=True)
-                row_cols[1].markdown(f"<div style='{style}'>{row[ip_column]}</div>", unsafe_allow_html=True)
-                row_cols[2].markdown(f"<div style='{style}'>{row[related_column]}</div>", unsafe_allow_html=True)
-                row_cols[3].markdown(f"<div style='{style}'>{row[info_column]}</div>", unsafe_allow_html=True)
+            row_cols[0].markdown(f"<div style='{style}'>{idx}</div>", unsafe_allow_html=True)
+            row_cols[1].markdown(f"<div style='{style}'>{row[ip_column]}</div>", unsafe_allow_html=True)
+            row_cols[2].markdown(f"<div style='{style}'>{row[related_column]}</div>", unsafe_allow_html=True)
+            row_cols[3].markdown(f"<div style='{style}'>{row[info_column]}</div>", unsafe_allow_html=True)
 
-                if row_cols[4].button("View More", key=f"view_{ip_column}_{row[ip_column]}"):
-                    st.session_state.selected_ip = row[ip_column]
-                    st.rerun()
-        else:
-            header_cols = st.columns([1, 3, 2, 2])
-            header_cols[0].markdown("**#**")
-            header_cols[1].markdown(f"**{ip_column}**")
-            header_cols[2].markdown(f"**{related_column}**")
-            header_cols[3].markdown("**Details**")
-
-            for idx, row in display_df.iterrows():
-                row_cols = st.columns([1, 3, 2, 2])
-                style = box_style(bool(row[has_risk_column]))
-
-                row_cols[0].markdown(f"<div style='{style}'>{idx}</div>", unsafe_allow_html=True)
-                row_cols[1].markdown(f"<div style='{style}'>{row[ip_column]}</div>", unsafe_allow_html=True)
-                row_cols[2].markdown(f"<div style='{style}'>{row[related_column]}</div>", unsafe_allow_html=True)
-
-                if row_cols[3].button("View More", key=f"view_{ip_column}_{row[ip_column]}"):
-                    st.session_state.selected_ip = row[ip_column]
-                    st.rerun()
-
-    def build_accounts_sharing_multiple_ips(filtered_login_accounts, searched_account):
-        if filtered_login_accounts.empty:
-            return pd.DataFrame()
-
-        searched_account = searched_account.strip().upper()
-
-        df = filtered_login_accounts[
-            filtered_login_accounts["Account"].str.upper() != searched_account
-        ]
-
-        grouped = (
-            df.groupby(["Account", "Customer"])
-            .agg(
-                Shared_IP_Count=("Login IP", "nunique"),
-                Shared_IPs=("Login IP", lambda x: ", ".join(sorted(set(x))))
-            )
-            .reset_index()
-        )
-
-        grouped = grouped[grouped["Shared_IP_Count"] > 1]
-        return grouped
-
-    # ---------------------------
-    # DETAIL PAGE
-    # ---------------------------
-    if st.session_state.selected_ip is not None:
-        selected_ip = st.session_state.selected_ip
-
-        st.title("IP Detail")
-        st.subheader(f"IP: {selected_ip}")
-
-        login_detail_df = login_ip_accounts[
-            login_ip_accounts["Login IP"] == selected_ip
-        ].copy()
-
-        signup_detail_df = signup_ip_accounts[
-            signup_ip_accounts["Signup IP"] == selected_ip
-        ].copy()
-
-        login_risk_count = int(login_detail_df["Risk Account"].sum()) if not login_detail_df.empty else 0
-        signup_risk_count = int(signup_detail_df["Risk Account"].sum()) if not signup_detail_df.empty else 0
-
-        c1, c2, c3 = st.columns(3)
-
-        with c1:
-            st.metric("Login Accounts", len(login_detail_df))
-
-        with c2:
-            st.metric("Signup Accounts", len(signup_detail_df))
-
-        with c3:
-            st.metric("Risk Accounts", login_risk_count + signup_risk_count)
-
-        st.markdown("## Logins")
-
-        if not login_detail_df.empty:
-            login_detail_df = login_detail_df[
-                ["Account", "Customer", "Last Login", "Risk Account"]
-            ]
-
-            styled_login_df = add_row_numbers(login_detail_df).style.apply(
-                highlight_risk_row,
-                axis=1
-            )
-            st.dataframe(styled_login_df, use_container_width=True)
-        else:
-            st.warning("No login accounts found for this IP.")
-
-        st.markdown("## Signup")
-
-        if not signup_detail_df.empty:
-            signup_detail_df = signup_detail_df[
-                ["Account", "Customer", "Created Date", "Risk Account"]
-            ]
-
-            styled_signup_df = add_row_numbers(signup_detail_df).style.apply(
-                highlight_risk_row,
-                axis=1
-            )
-            st.dataframe(styled_signup_df, use_container_width=True)
-        else:
-            st.warning("No signup accounts found for this IP.")
-
-        st.caption("Accounts highlighted in red are risk accounts.")
-
-        if st.button("Back to Search"):
-            st.session_state.selected_ip = None
-            st.rerun()
-
-    # ---------------------------
-    # MAIN PAGE
-    # ---------------------------
+            if row_cols[4].button("View More", key=f"view_{ip_column}_{row[ip_column]}"):
+                st.session_state.selected_ip = row[ip_column]
+                st.rerun()
     else:
-        top_col1, top_col2 = st.columns([6, 1])
+        header_cols = st.columns([1, 3, 2, 2])
+        header_cols[0].markdown("**#**")
+        header_cols[1].markdown(f"**{ip_column}**")
+        header_cols[2].markdown(f"**{related_column}**")
+        header_cols[3].markdown("**Details**")
 
-        with top_col1:
-            st.title("IP Report")
-            st.subheader("Search by Account or IP")
+        for idx, row in display_df.iterrows():
+            row_cols = st.columns([1, 3, 2, 2])
+            style = box_style(bool(row[has_risk_column]))
 
-        # The BetAnything logo is already included in Background.png.
+            row_cols[0].markdown(f"<div style='{style}'>{idx}</div>", unsafe_allow_html=True)
+            row_cols[1].markdown(f"<div style='{style}'>{row[ip_column]}</div>", unsafe_allow_html=True)
+            row_cols[2].markdown(f"<div style='{style}'>{row[related_column]}</div>", unsafe_allow_html=True)
 
-        search_type = st.radio(
-            "Search Type",
-            ["Account", "IP"],
-            horizontal=True,
-            index=0 if st.session_state.last_search_type == "Account" else 1
+            if row_cols[3].button("View More", key=f"view_{ip_column}_{row[ip_column]}"):
+                st.session_state.selected_ip = row[ip_column]
+                st.rerun()
+
+def build_accounts_sharing_multiple_ips(filtered_login_accounts, searched_account):
+    if filtered_login_accounts.empty:
+        return pd.DataFrame()
+
+    searched_account = searched_account.strip().upper()
+
+    df = filtered_login_accounts[
+        filtered_login_accounts["Account"].str.upper() != searched_account
+    ]
+
+    grouped = (
+        df.groupby(["Account", "Customer"])
+        .agg(
+            Shared_IP_Count=("Login IP", "nunique"),
+            Shared_IPs=("Login IP", lambda x: ", ".join(sorted(set(x))))
+        )
+        .reset_index()
+    )
+
+    grouped = grouped[grouped["Shared_IP_Count"] > 1]
+    return grouped
+
+# ---------------------------
+# DETAIL PAGE
+# ---------------------------
+if st.session_state.selected_ip is not None:
+    selected_ip = st.session_state.selected_ip
+
+    st.title("IP Detail")
+    st.subheader(f"IP: {selected_ip}")
+
+    login_detail_df = login_ip_accounts[
+        login_ip_accounts["Login IP"] == selected_ip
+    ].copy()
+
+    signup_detail_df = signup_ip_accounts[
+        signup_ip_accounts["Signup IP"] == selected_ip
+    ].copy()
+
+    login_risk_count = int(login_detail_df["Risk Account"].sum()) if not login_detail_df.empty else 0
+    signup_risk_count = int(signup_detail_df["Risk Account"].sum()) if not signup_detail_df.empty else 0
+
+    c1, c2, c3 = st.columns(3)
+
+    with c1:
+        st.metric("Login Accounts", len(login_detail_df))
+
+    with c2:
+        st.metric("Signup Accounts", len(signup_detail_df))
+
+    with c3:
+        st.metric("Risk Accounts", login_risk_count + signup_risk_count)
+
+    st.markdown("## Logins")
+
+    if not login_detail_df.empty:
+        login_detail_df = login_detail_df[
+            ["Account", "Customer", "Last Login", "Risk Account"]
+        ]
+
+        styled_login_df = add_row_numbers(login_detail_df).style.apply(
+            highlight_risk_row,
+            axis=1
+        )
+        st.dataframe(styled_login_df, use_container_width=True)
+    else:
+        st.warning("No login accounts found for this IP.")
+
+    st.markdown("## Signup")
+
+    if not signup_detail_df.empty:
+        signup_detail_df = signup_detail_df[
+            ["Account", "Customer", "Created Date", "Risk Account"]
+        ]
+
+        styled_signup_df = add_row_numbers(signup_detail_df).style.apply(
+            highlight_risk_row,
+            axis=1
+        )
+        st.dataframe(styled_signup_df, use_container_width=True)
+    else:
+        st.warning("No signup accounts found for this IP.")
+
+    st.caption("Accounts highlighted in red are risk accounts.")
+
+    if st.button("Back to Search"):
+        st.session_state.selected_ip = None
+        st.rerun()
+
+# ---------------------------
+# MAIN PAGE
+# ---------------------------
+else:
+    top_col1, top_col2 = st.columns([6, 1])
+
+    with top_col1:
+        st.title("IP Report")
+        st.subheader("Search by Account or IP")
+
+    # The BetAnything logo is already included in Background.png.
+
+    search_type = st.radio(
+        "Search Type",
+        ["Account", "IP"],
+        horizontal=True,
+        index=0 if st.session_state.last_search_type == "Account" else 1
+    )
+
+    search_col1, search_col2 = st.columns([2, 2])
+
+    with search_col1:
+        search_input = st.text_input(
+            "Type Search Value",
+            value=st.session_state.last_search_input,
+            placeholder="A20456, or 563.123.256.33"
         )
 
-        search_col1, search_col2 = st.columns([2, 2])
+    with search_col2:
+        st.date_input(
+            "Date Range",
+            value=(date(2025, 1, 1), date(2025, 12, 31)),
+            help="Visual filter only. Not functional in this prototype version."
+        )
 
-        with search_col1:
-            search_input = st.text_input(
-                "Type Search Value",
-                value=st.session_state.last_search_input,
-                placeholder="A20456, or 563.123.256.33"
-            )
+    if st.button("Search"):
+        st.session_state.last_search_type = search_type
+        st.session_state.last_search_input = search_input
+        st.session_state.search_executed = True
 
-        with search_col2:
-            st.date_input(
-                "Date Range",
-                value=(date(2025, 1, 1), date(2025, 12, 31)),
-                help="Visual filter only. Not functional in this prototype version."
-            )
+        search_clean = search_input.strip().upper()
 
-        if st.button("Search"):
-            st.session_state.last_search_type = search_type
-            st.session_state.last_search_input = search_input
-            st.session_state.search_executed = True
+        if search_type == "Account":
+            account_login_rows = login_ip_accounts[
+                login_ip_accounts["Account"].str.upper() == search_clean
+            ]
 
-            search_clean = search_input.strip().upper()
+            account_signup_row = signup_ip_accounts[
+                signup_ip_accounts["Account"].str.upper() == search_clean
+            ]
 
-            if search_type == "Account":
-                account_login_rows = login_ip_accounts[
-                    login_ip_accounts["Account"].str.upper() == search_clean
+            related_ip_matches = account_login_rows["Login IP"].unique().tolist()
+            signup_ip_matches = account_signup_row["Signup IP"].unique().tolist()
+
+            signup_ip_as_login_rows = login_ip_accounts[
+                login_ip_accounts["Login IP"].isin(signup_ip_matches)
+            ]
+
+            signup_ip_as_signup_rows = signup_ip_accounts[
+                signup_ip_accounts["Signup IP"].isin(signup_ip_matches)
+            ]
+
+            signup_ip_has_login_relation = not signup_ip_as_login_rows.empty
+            signup_ip_has_signup_relation = signup_ip_as_signup_rows["Account"].nunique() > 1
+
+            if signup_ip_has_login_relation or signup_ip_has_signup_relation:
+                related_ip_matches = list(set(related_ip_matches + signup_ip_matches))
+
+            filtered_related_login_accounts = login_ip_accounts[
+                login_ip_accounts["Login IP"].isin(related_ip_matches)
+            ]
+
+            signup_related_accounts_for_related_ip = signup_ip_accounts[
+                signup_ip_accounts["Signup IP"].isin(related_ip_matches)
+            ].rename(columns={
+                "Signup IP": "Login IP",
+                "Created Date": "Last Login"
+            })
+
+            if not signup_related_accounts_for_related_ip.empty:
+                signup_related_accounts_for_related_ip["Location"] = signup_related_accounts_for_related_ip["Country"]
+
+                signup_related_accounts_for_related_ip = signup_related_accounts_for_related_ip[
+                    ["Account", "Customer", "Login IP", "Location", "Risk Account", "Last Login"]
                 ]
 
-                account_signup_row = signup_ip_accounts[
-                    signup_ip_accounts["Account"].str.upper() == search_clean
-                ]
-
-                related_ip_matches = account_login_rows["Login IP"].unique().tolist()
-                signup_ip_matches = account_signup_row["Signup IP"].unique().tolist()
-
-                signup_ip_as_login_rows = login_ip_accounts[
-                    login_ip_accounts["Login IP"].isin(signup_ip_matches)
-                ]
-
-                signup_ip_as_signup_rows = signup_ip_accounts[
-                    signup_ip_accounts["Signup IP"].isin(signup_ip_matches)
-                ]
-
-                signup_ip_has_login_relation = not signup_ip_as_login_rows.empty
-                signup_ip_has_signup_relation = signup_ip_as_signup_rows["Account"].nunique() > 1
-
-                if signup_ip_has_login_relation or signup_ip_has_signup_relation:
-                    related_ip_matches = list(set(related_ip_matches + signup_ip_matches))
-
-                filtered_related_login_accounts = login_ip_accounts[
-                    login_ip_accounts["Login IP"].isin(related_ip_matches)
-                ]
-
-                signup_related_accounts_for_related_ip = signup_ip_accounts[
-                    signup_ip_accounts["Signup IP"].isin(related_ip_matches)
-                ].rename(columns={
-                    "Signup IP": "Login IP",
-                    "Created Date": "Last Login"
-                })
-
-                if not signup_related_accounts_for_related_ip.empty:
-                    signup_related_accounts_for_related_ip["Location"] = signup_related_accounts_for_related_ip["Country"]
-
-                    signup_related_accounts_for_related_ip = signup_related_accounts_for_related_ip[
-                        ["Account", "Customer", "Login IP", "Location", "Risk Account", "Last Login"]
-                    ]
-
-                    filtered_related_login_accounts = pd.concat(
-                        [filtered_related_login_accounts, signup_related_accounts_for_related_ip],
-                        ignore_index=True
-                    )
-
-                filtered_related_ips = build_related_ips_summary(filtered_related_login_accounts)
-
-                filtered_login_ips = login_ips_without_relationships[
-                    login_ips_without_relationships["Account"].str.upper() == search_clean
-                ][["Login IP", "Last Login", "Location"]]
-
-                filtered_signup_accounts_for_summary = signup_ip_accounts[
-                    signup_ip_accounts["Signup IP"].isin(signup_ip_matches)
-                ]
-
-                filtered_signup_ips = build_signup_ips_summary(filtered_signup_accounts_for_summary)
-
-                st.session_state.filtered_related_login_accounts = filtered_related_login_accounts
-                st.session_state.filtered_related_ips = filtered_related_ips
-                st.session_state.filtered_login_ips = filtered_login_ips
-                st.session_state.filtered_signup_ips = filtered_signup_ips
-
-            else:
-                filtered_login_ip_accounts = login_ip_accounts[
-                    login_ip_accounts["Login IP"].str.contains(search_clean, case=False, na=False)
-                ]
-
-                standalone_login_accounts = login_ips_without_relationships[
-                    login_ips_without_relationships["Login IP"].str.contains(search_clean, case=False, na=False)
-                ][["Account", "Customer", "Login IP", "Location", "Last Login"]].copy()
-
-                if not standalone_login_accounts.empty:
-                    standalone_login_accounts["Risk Account"] = False
-
-                    standalone_login_accounts = standalone_login_accounts[
-                        ["Account", "Customer", "Login IP", "Last Login", "Risk Account"]
-                    ]
-
-                filtered_login_ip_accounts = filtered_login_ip_accounts[
-                    ["Account", "Customer", "Login IP", "Last Login", "Risk Account"]
-                ]
-
-                filtered_login_ip_accounts = pd.concat(
-                    [filtered_login_ip_accounts, standalone_login_accounts],
+                filtered_related_login_accounts = pd.concat(
+                    [filtered_related_login_accounts, signup_related_accounts_for_related_ip],
                     ignore_index=True
                 )
 
-                filtered_signup_accounts = signup_ip_accounts[
-                    signup_ip_accounts["Signup IP"].str.contains(search_clean, case=False, na=False)
+            filtered_related_ips = build_related_ips_summary(filtered_related_login_accounts)
+
+            filtered_login_ips = login_ips_without_relationships[
+                login_ips_without_relationships["Account"].str.upper() == search_clean
+            ][["Login IP", "Last Login", "Location"]]
+
+            filtered_signup_accounts_for_summary = signup_ip_accounts[
+                signup_ip_accounts["Signup IP"].isin(signup_ip_matches)
+            ]
+
+            filtered_signup_ips = build_signup_ips_summary(filtered_signup_accounts_for_summary)
+
+            st.session_state.filtered_related_login_accounts = filtered_related_login_accounts
+            st.session_state.filtered_related_ips = filtered_related_ips
+            st.session_state.filtered_login_ips = filtered_login_ips
+            st.session_state.filtered_signup_ips = filtered_signup_ips
+
+        else:
+            filtered_login_ip_accounts = login_ip_accounts[
+                login_ip_accounts["Login IP"].str.contains(search_clean, case=False, na=False)
+            ]
+
+            standalone_login_accounts = login_ips_without_relationships[
+                login_ips_without_relationships["Login IP"].str.contains(search_clean, case=False, na=False)
+            ][["Account", "Customer", "Login IP", "Location", "Last Login"]].copy()
+
+            if not standalone_login_accounts.empty:
+                standalone_login_accounts["Risk Account"] = False
+
+                standalone_login_accounts = standalone_login_accounts[
+                    ["Account", "Customer", "Login IP", "Last Login", "Risk Account"]
                 ]
 
-                st.session_state.filtered_login_ip_accounts = filtered_login_ip_accounts
-                st.session_state.filtered_signup_accounts = filtered_signup_accounts
+            filtered_login_ip_accounts = filtered_login_ip_accounts[
+                ["Account", "Customer", "Login IP", "Last Login", "Risk Account"]
+            ]
 
-        if st.session_state.search_executed:
-            if st.session_state.last_search_type == "Account":
-                filtered_related_ips = st.session_state.filtered_related_ips
-                filtered_login_ips = st.session_state.filtered_login_ips
-                filtered_signup_ips = st.session_state.filtered_signup_ips
-                filtered_related_login_accounts = st.session_state.filtered_related_login_accounts
+            filtered_login_ip_accounts = pd.concat(
+                [filtered_login_ip_accounts, standalone_login_accounts],
+                ignore_index=True
+            )
 
-                st.markdown("## Summary")
-                s1, s2, s3, s4 = st.columns(4)
+            filtered_signup_accounts = signup_ip_accounts[
+                signup_ip_accounts["Signup IP"].str.contains(search_clean, case=False, na=False)
+            ]
 
-                with s1:
-                    st.metric("Total IPs", len(filtered_related_ips) + len(filtered_login_ips) + len(filtered_signup_ips))
-                with s2:
-                    st.metric("IPs with Relationships", len(filtered_related_ips))
-                with s3:
-                    st.metric("Login IPs without Relationships", len(filtered_login_ips))
-                with s4:
-                    st.metric("Signup IP", len(filtered_signup_ips))
+            st.session_state.filtered_login_ip_accounts = filtered_login_ip_accounts
+            st.session_state.filtered_signup_accounts = filtered_signup_accounts
 
-                st.markdown("## IPs with Related Accounts")
-                if not filtered_related_ips.empty:
-                    show_ip_summary_table(filtered_related_ips, "IP Address", "Related Accounts", "Location")
-                else:
-                    st.warning("No related IPs found.")
+    if st.session_state.search_executed:
+        if st.session_state.last_search_type == "Account":
+            filtered_related_ips = st.session_state.filtered_related_ips
+            filtered_login_ips = st.session_state.filtered_login_ips
+            filtered_signup_ips = st.session_state.filtered_signup_ips
+            filtered_related_login_accounts = st.session_state.filtered_related_login_accounts
 
-                st.markdown("## Accounts Sharing Multiple IPs")
-                accounts_sharing_multiple_ips = build_accounts_sharing_multiple_ips(
-                    filtered_related_login_accounts,
-                    st.session_state.last_search_input
-                )
+            st.markdown("## Summary")
+            s1, s2, s3, s4 = st.columns(4)
 
-                if not accounts_sharing_multiple_ips.empty:
-                    st.dataframe(add_row_numbers(accounts_sharing_multiple_ips), use_container_width=True)
-                else:
-                    st.warning("No other accounts sharing multiple IPs found.")
+            with s1:
+                st.metric("Total IPs", len(filtered_related_ips) + len(filtered_login_ips) + len(filtered_signup_ips))
+            with s2:
+                st.metric("IPs with Relationships", len(filtered_related_ips))
+            with s3:
+                st.metric("Login IPs without Relationships", len(filtered_login_ips))
+            with s4:
+                st.metric("Signup IP", len(filtered_signup_ips))
 
-                st.markdown("## Signup IP")
-                if not filtered_signup_ips.empty:
-                    show_ip_summary_table(filtered_signup_ips, "Signup IP", "Related Accounts")
-                else:
-                    st.warning("No signup IP found.")
-
-                st.markdown("## Login IPs without Relationships")
-                if not filtered_login_ips.empty:
-                    st.dataframe(add_row_numbers(filtered_login_ips), use_container_width=True)
-                else:
-                    st.warning("No login IPs without relationships found.")
-
+            st.markdown("## IPs with Related Accounts")
+            if not filtered_related_ips.empty:
+                show_ip_summary_table(filtered_related_ips, "IP Address", "Related Accounts", "Location")
             else:
-                filtered_login_ip_accounts = st.session_state.filtered_login_ip_accounts
-                filtered_signup_accounts = st.session_state.filtered_signup_accounts
+                st.warning("No related IPs found.")
 
-                st.markdown("## Summary")
-                c1, c2 = st.columns(2)
+            st.markdown("## Accounts Sharing Multiple IPs")
+            accounts_sharing_multiple_ips = build_accounts_sharing_multiple_ips(
+                filtered_related_login_accounts,
+                st.session_state.last_search_input
+            )
 
-                with c1:
-                    st.metric("Login IP Accounts", len(filtered_login_ip_accounts))
-                with c2:
-                    st.metric("Signup IP Accounts", len(filtered_signup_accounts))
+            if not accounts_sharing_multiple_ips.empty:
+                st.dataframe(add_row_numbers(accounts_sharing_multiple_ips), use_container_width=True)
+            else:
+                st.warning("No other accounts sharing multiple IPs found.")
 
-                st.markdown("## Login IP Accounts")
-                if not filtered_login_ip_accounts.empty:
-                    styled_df = add_row_numbers(filtered_login_ip_accounts).style.apply(highlight_risk_row, axis=1)
-                    st.dataframe(styled_df, use_container_width=True)
-                else:
-                    st.warning("No accounts found using this IP as Login IP.")
+            st.markdown("## Signup IP")
+            if not filtered_signup_ips.empty:
+                show_ip_summary_table(filtered_signup_ips, "Signup IP", "Related Accounts")
+            else:
+                st.warning("No signup IP found.")
 
-                st.markdown("## Signup IP Accounts")
-                if not filtered_signup_accounts.empty:
-                    styled_df = add_row_numbers(filtered_signup_accounts).style.apply(highlight_risk_row, axis=1)
-                    st.dataframe(styled_df, use_container_width=True)
-                else:
-                    st.warning("No accounts found using this IP as Signup IP.")
+            st.markdown("## Login IPs without Relationships")
+            if not filtered_login_ips.empty:
+                st.dataframe(add_row_numbers(filtered_login_ips), use_container_width=True)
+            else:
+                st.warning("No login IPs without relationships found.")
+
+        else:
+            filtered_login_ip_accounts = st.session_state.filtered_login_ip_accounts
+            filtered_signup_accounts = st.session_state.filtered_signup_accounts
+
+            st.markdown("## Summary")
+            c1, c2 = st.columns(2)
+
+            with c1:
+                st.metric("Login IP Accounts", len(filtered_login_ip_accounts))
+            with c2:
+                st.metric("Signup IP Accounts", len(filtered_signup_accounts))
+
+            st.markdown("## Login IP Accounts")
+            if not filtered_login_ip_accounts.empty:
+                styled_df = add_row_numbers(filtered_login_ip_accounts).style.apply(highlight_risk_row, axis=1)
+                st.dataframe(styled_df, use_container_width=True)
+            else:
+                st.warning("No accounts found using this IP as Login IP.")
+
+            st.markdown("## Signup IP Accounts")
+            if not filtered_signup_accounts.empty:
+                styled_df = add_row_numbers(filtered_signup_accounts).style.apply(highlight_risk_row, axis=1)
+                st.dataframe(styled_df, use_container_width=True)
+            else:
+                st.warning("No accounts found using this IP as Signup IP.")
 
