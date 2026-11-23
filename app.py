@@ -37,38 +37,6 @@ if background:
         [data-testid="stSidebarCollapsedControl"],
         [data-testid="stSidebarCollapseButton"],
         [data-testid="stSidebarNav"] {{ visibility: visible; }}
-        /* Streamlit places the OPEN and CLOSE controls in different wrappers.
-           Move the wrapper, not just the inner button. */
-        [data-testid="stSidebarHeader"] {
-            position: absolute !important;
-            top: 50% !important;
-            right: 0 !important;
-            left: auto !important;
-            transform: translateY(-50%) !important;
-            width: auto !important;
-            height: auto !important;
-            padding: 0 !important;
-            z-index: 99999 !important;
-        }
-        [data-testid="stSidebarHeader"] [data-testid="stSidebarCollapseButton"],
-        [data-testid="stSidebarHeader"] button {
-            position: static !important;
-            transform: none !important;
-            margin: 0 !important;
-        }
-        [data-testid="stSidebarCollapsedControl"] {
-            position: fixed !important;
-            top: 50vh !important;
-            left: 0.5rem !important;
-            right: auto !important;
-            bottom: auto !important;
-            transform: translateY(-50%) !important;
-            z-index: 99999 !important;
-        }
-        [data-testid="stSidebarCollapsedControl"] button {
-            position: static !important;
-            transform: none !important;
-        }
         [data-testid="stMainBlockContainer"] {{
             background: rgba(25, 7, 39, 0.18);
             border-radius: 16px;
@@ -93,6 +61,31 @@ if background:
     )
 else:
     st.warning("Background.png was not found beside the app script in the repository.")
+
+# Position sidebar toggle controls independently from the background CSS.
+# Plain string (not an f-string): CSS braces remain literal.
+st.markdown("""
+<style>
+[data-testid="stSidebar"] [data-testid="stSidebarCollapseButton"] {
+    position: fixed !important;
+    top: 50vh !important;
+    left: 250px !important;
+    transform: translateY(-50%) !important;
+    z-index: 999999 !important;
+}
+[data-testid="stSidebarCollapsedControl"] {
+    position: fixed !important;
+    top: 50vh !important;
+    left: 8px !important;
+    transform: translateY(-50%) !important;
+    z-index: 999999 !important;
+}
+[data-testid="stSidebarCollapsedControl"] button,
+[data-testid="stSidebarCollapseButton"] button {
+    visibility: visible !important;
+}
+</style>
+""", unsafe_allow_html=True)
 
 # Native Streamlit sidebar: expandable and collapsible using the built-in control.
 with st.sidebar:
