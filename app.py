@@ -3,6 +3,7 @@ import pandas as pd
 from datetime import date
 from pathlib import Path
 import base64
+from PIL import Image
 
 st.set_page_config(page_title="IP Report", layout="wide", initial_sidebar_state="expanded")
 
@@ -24,10 +25,18 @@ background_css = (
     if background else
     'background-image: radial-gradient(ellipse at 15% 25%, #73115f 0%, #350742 48%, #160421 100%);'
 )
-logo_css = (
-    f'background-image: url("data:image/jpeg;base64,{logo}");'
-    if logo else 'display: none;'
-)
+# Load the logo as an actual Streamlit image rather than a CSS pseudo-element.
+# A .jfif file is a JPEG; Pillow reads it and Streamlit renders it reliably.
+logo_path = ASSET_DIR / "logo.jfif"
+if logo_path.is_file():
+    try:
+        with Image.open(logo_path) as source:
+            logo_image = source.convert("RGBA")
+        st.logo(logo_image, size="large")
+    except Exception as exc:
+        st.warning(f"No se pudo abrir logo.jfif: {exc}")
+else:
+    st.warning("No se encontró logo.jfif junto a app.py. Revisa el nombre y la carpeta en GitHub.")
 
 st.markdown(f"""
 <style>
@@ -59,22 +68,7 @@ st.markdown(f"""
 }}
 .stButton > button {{ background: #f7f2fb; color: #2a1039; border: 1px solid #e1cde8; }}
 .stButton > button p {{ color: #2a1039 !important; }}
-/* Independent, proportional logo anchored to the viewport, not the background. */
-.stApp::before {{
-    content: "";
-    position: fixed;
-    top: 14px;
-    left: 18px;
-    width: clamp(140px, 13vw, 195px);
-    height: 54px;
-    {logo_css}
-    background-repeat: no-repeat;
-    background-size: contain;
-    background-position: left center;
-    pointer-events: none;
-    z-index: 2;
-}}
-/* Leave the native Streamlit sidebar toggle alone: it remains collapsible. */
+/* Logo rendered by st.logo; no overlapping CSS overlay. */
 </style>
 """, unsafe_allow_html=True)
 
