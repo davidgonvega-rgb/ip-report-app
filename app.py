@@ -4,7 +4,7 @@ from datetime import date
 
 st.set_page_config(page_title="IP Report", layout="wide")
 
-st.sidebar.title("Betcris")
+st.sidebar.title("BetAnything")
 st.sidebar.title("IP Intelligence Tool")
 st.sidebar.markdown("Prototype")
 st.sidebar.markdown("---")
@@ -540,3 +540,4 @@ else:
                 st.dataframe(styled_df, use_container_width=True)
             else:
                 st.warning("No accounts found using this IP as Signup IP.")
+
