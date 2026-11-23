@@ -16,7 +16,7 @@ def asset_base64(filename):
     return base64.b64encode(path.read_bytes()).decode("ascii") if path.is_file() else None
 
 background = asset_base64("Background.png")
-logo = asset_base64("logo.jfif")
+logo = asset_base64("BAS.logo.png")
 
 # The background preserves its aspect ratio. The independent logo never stretches.
 # For best results Background.png should contain ONLY the purple gradient.
@@ -27,14 +27,14 @@ background_css = (
 )
 # Load the logo as an actual Streamlit image rather than a CSS pseudo-element.
 # A .jfif file is a JPEG; Pillow reads it and Streamlit renders it reliably.
-logo_path = ASSET_DIR / "logo.jfif"
+logo_path = ASSET_DIR / "BAS.logo.png"
 if logo_path.is_file():
     try:
         with Image.open(logo_path) as source:
             logo_image = source.convert("RGBA")
         st.logo(logo_image, size="large")
     except Exception as exc:
-        st.warning(f"No se pudo abrir logo.jfif: {exc}")
+        st.warning(f"No se pudo abrir BAS.logo.png: {exc}")
 else:
     st.warning("No se encontró logo.jfif junto a app.py. Revisa el nombre y la carpeta en GitHub.")
 
