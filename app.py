@@ -6,113 +6,86 @@ import base64
 
 st.set_page_config(page_title="IP Report", layout="wide", initial_sidebar_state="expanded")
 
-# Background.png must be placed in the same GitHub folder as this script.
+# Assets are read from the repository directory.
+ASSET_DIR = Path(__file__).resolve().parent
+
 @st.cache_data(show_spinner=False)
-def load_background_image():
-    image_path = Path(__file__).resolve().parent / "Background.png"
-    if not image_path.is_file():
-        return None
-    return base64.b64encode(image_path.read_bytes()).decode("utf-8")
+def asset_base64(filename):
+    path = ASSET_DIR / filename
+    return base64.b64encode(path.read_bytes()).decode("ascii") if path.is_file() else None
 
-background = load_background_image()
-if background:
-    st.markdown(
-        f"""
-        <style>
-        .stApp {{
-            background-color: #190723;
-            background-image: url("data:image/png;base64,{background}");
-            background-position: center top;
-            background-repeat: no-repeat;
-            background-size: 100% 100%;
-            background-attachment: fixed;
-            color: white;
-        }}
-        [data-testid="stHeader"] {{ background: transparent; }}
-        [data-testid="stSidebar"] {{
-            background: rgba(32, 10, 48, 0.94);
-            border-right: 1px solid rgba(255,255,255,0.15);
-        }}
-        [data-testid="stSidebar"] * {{ color: #ffffff; }}
-        [data-testid="stSidebarCollapsedControl"],
-        [data-testid="stSidebarCollapseButton"],
-        [data-testid="stSidebarNav"] {{ visibility: visible; }}
-        [data-testid="stMainBlockContainer"] {{
-            background: rgba(25, 7, 39, 0.18);
-            border-radius: 16px;
-            padding-top: 2.5rem;
-        }}
-        .stApp h1, .stApp h2, .stApp h3,
-        .stApp p, .stApp label {{ color: #ffffff; }}
-        [data-testid="stMetric"] {{
-            background: rgba(65, 24, 85, 0.85);
-            padding: 12px;
-            border-radius: 10px;
-        }}
-        .stButton > button {{
-            background: #f7f2fb;
-            color: #2a1039;
-            border: 1px solid #e1cde8;
-        }}
-        .stButton > button p {{ color: #2a1039 !important; }}
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
-else:
-    st.warning("Background.png was not found beside the app script in the repository.")
+background = asset_base64("Background.png")
+logo = asset_base64("logo.jfif")
 
-# Keep the native Streamlit sidebar controls vertically centered.
-# Both the expanded sidebar header and the collapsed control must be moved:
-# moving only the button leaves its parent at the top of the page.
-st.markdown("""
+# The background preserves its aspect ratio. The independent logo never stretches.
+# For best results Background.png should contain ONLY the purple gradient.
+background_css = (
+    f'background-image: url("data:image/png;base64,{background}");'
+    if background else
+    'background-image: radial-gradient(ellipse at 15% 25%, #73115f 0%, #350742 48%, #160421 100%);'
+)
+logo_css = (
+    f'background-image: url("data:image/jpeg;base64,{logo}");'
+    if logo else 'display: none;'
+)
+
+st.markdown(f"""
 <style>
-/* Expanded sidebar: reposition the entire header containing the collapse button. */
-section[data-testid="stSidebar"] [data-testid="stSidebarHeader"] {
-    position: fixed !important;
-    top: 50vh !important;
-    left: 0 !important;
-    width: 285px !important;
-    height: 0 !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    overflow: visible !important;
-    z-index: 100000 !important;
-}
-section[data-testid="stSidebar"] [data-testid="stSidebarCollapseButton"] {
-    position: absolute !important;
-    top: 0 !important;
-    right: 4px !important;
-    left: auto !important;
-    transform: translateY(-50%) !important;
-    z-index: 100001 !important;
-}
-/* Collapsed sidebar: reposition the entire floating control. */
-[data-testid="stSidebarCollapsedControl"] {
-    position: fixed !important;
-    top: 50vh !important;
-    left: 8px !important;
-    right: auto !important;
-    transform: translateY(-50%) !important;
-    z-index: 100001 !important;
-}
-/* Alternative sidebar button wrapper used by some Streamlit releases. */
-section[data-testid="stSidebar"] [data-testid="stSidebarHeader"] button {
-    visibility: visible !important;
-}
+.stApp {{
+    background-color: #190723;
+    {background_css}
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    color: white;
+}}
+[data-testid="stHeader"] {{ background: transparent; }}
+[data-testid="stSidebar"] {{
+    background: rgba(32, 10, 48, 0.96);
+    border-right: 1px solid rgba(255,255,255,0.15);
+}}
+[data-testid="stSidebar"] * {{ color: white; }}
+[data-testid="stMainBlockContainer"] {{
+    background: rgba(25, 7, 39, 0.12);
+    border-radius: 16px;
+    padding-top: 5rem;
+}}
+.stApp h1, .stApp h2, .stApp h3, .stApp p, .stApp label {{ color: white; }}
+[data-testid="stMetric"] {{
+    background: rgba(65, 24, 85, 0.85);
+    padding: 12px;
+    border-radius: 10px;
+}}
+.stButton > button {{ background: #f7f2fb; color: #2a1039; border: 1px solid #e1cde8; }}
+.stButton > button p {{ color: #2a1039 !important; }}
+/* Independent, proportional logo anchored to the viewport, not the background. */
+.stApp::before {{
+    content: "";
+    position: fixed;
+    top: 14px;
+    left: 18px;
+    width: clamp(140px, 13vw, 195px);
+    height: 54px;
+    {logo_css}
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-position: left center;
+    pointer-events: none;
+    z-index: 2;
+}}
+/* Leave the native Streamlit sidebar toggle alone: it remains collapsible. */
 </style>
 """, unsafe_allow_html=True)
 
-# Native Streamlit sidebar: expandable and collapsible using the built-in control.
 with st.sidebar:
-    st.title("BetAnything")
     st.title("IP Intelligence Tool")
-    st.markdown("Prototype")
-    st.markdown("---")
+    st.caption("Prototype")
+    st.divider()
     st.write("**Search Modes**")
     st.write("- By Account")
     st.write("- By IP")
-    st.markdown("---")
+    st.divider()
     st.write("**Environment**")
     st.write("Mock Data / Demo Version 1.0")
 
