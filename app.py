@@ -1,3 +1,7 @@
+
+Archivo adjunto del usuario
+Revisa el codigo, me aparece un msj de error al abrir la aplicacion
+
 # SESSION STATE
 # ---------------------------
 for key, default in {
@@ -189,3 +193,179 @@ def show_ip_summary_table(df, ip_column, related_column, info_column=None, has_r
         for idx, row in display_df.iterrows():
             row_cols = st.columns([1, 3, 2, 3, 2])
             style = box_style(bool(row[has_risk_column]))
+…
+El error que aparece en Streamlit es un NameError, y el mensaje señala esta línea de tu archivo app.py:
+
+if key not in st.session_state:
+
+El problema más probable es que el código actualizado perdió las importaciones iniciales, particularmente import streamlit as st.
+
+Para corregirlo, el archivo debe comenzar con:
+
+import streamlit as st
+import pandas as pd
+from datetime import date
+from pathlib import Path
+import base64
+
+st.set_page_config(
+    page_title="IP Intelligence Tool",
+    layout="wide"
+)
+
+Estas instrucciones deben estar antes del bloque SESSION STATE.
+
+Voy a comprobar también la integración del fondo para evitar que el siguiente despliegue falle al cargar Background.png.
+
+Ya revisé el archivo Python completo. El código actualizado sí incluye las importaciones necesarias, por lo que el error indica que GitHub está ejecutando una versión incompleta o diferente del archivo.
+
+Preparé una versión con el nombre app.py, que coincide con el archivo que Streamlit está ejecutando según el error.
+
+app.py
+
+Código completo con fondo de BetAnything y funciones originales
+Descargar app.py corregido
+
+requirements.txt
+
+Dependencias necesarias para Streamlit Cloud
+Descargar requirements.txt
+
+Pasos para corregirlo en GitHub
+Abre tu repositorio ip-report-app.
+
+Reemplaza el contenido del archivo app.py con el archivo corregido.
+
+Confirma que Background.png esté en la misma carpeta.
+
+Agrega o actualiza requirements.txt.
+
+Guarda los cambios mediante Commit changes.
+
+Tu repositorio debe quedar así:
+
+ip-report-app/
+├── app.py
+├── Background.png
+└── requirements.txt
+He comprobado que el archivo corregido pasa la validación de sintaxis de Python y que la referencia al fondo es correcta. No he podido ejecutar el despliegue real en Streamlit Cloud, por lo que esa última comprobación queda pendiente.
+
+Con estos cambios debería desaparecer el NameError que aparece en la captura.
+
+
+app.py
+Código
+
+requirements.txt
+Documento
+
+
+
+
+        else:
+            filtered_login_ip_accounts = login_ip_accounts[
+                login_ip_accounts["Login IP"].str.contains(search_clean, case=False, na=False)
+            ]
+
+            standalone_login_accounts = login_ips_without_relationships[
+                login_ips_without_relationships["Login IP"].str.contains(search_clean, case=False, na=False)
+            ][["Account", "Customer", "Login IP", "Location", "Last Login"]].copy()
+
+            if not standalone_login_accounts.empty:
+                standalone_login_accounts["Risk Account"] = False
+
+                standalone_login_accounts = standalone_login_accounts[
+                    ["Account", "Customer", "Login IP", "Last Login", "Risk Account"]
+                ]
+
+            filtered_login_ip_accounts = filtered_login_ip_accounts[
+                ["Account", "Customer", "Login IP", "Last Login", "Risk Account"]
+            ]
+
+            filtered_login_ip_accounts = pd.concat(
+                [filtered_login_ip_accounts, standalone_login_accounts],
+                ignore_index=True
+            )
+
+            filtered_signup_accounts = signup_ip_accounts[
+                signup_ip_accounts["Signup IP"].str.contains(search_clean, case=False, na=False)
+            ]
+
+            st.session_state.filtered_login_ip_accounts = filtered_login_ip_accounts
+            st.session_state.filtered_signup_accounts = filtered_signup_accounts
+
+    if st.session_state.search_executed:
+        if st.session_state.last_search_type == "Account":
+            filtered_related_ips = st.session_state.filtered_related_ips
+            filtered_login_ips = st.session_state.filtered_login_ips
+            filtered_signup_ips = st.session_state.filtered_signup_ips
+            filtered_related_login_accounts = st.session_state.filtered_related_login_accounts
+
+            st.markdown("## Summary")
+            s1, s2, s3, s4 = st.columns(4)
+
+            with s1:
+                st.metric("Total IPs", len(filtered_related_ips) + len(filtered_login_ips) + len(filtered_signup_ips))
+            with s2:
+                st.metric("IPs with Relationships", len(filtered_related_ips))
+            with s3:
+                st.metric("Login IPs without Relationships", len(filtered_login_ips))
+            with s4:
+                st.metric("Signup IP", len(filtered_signup_ips))
+
+            st.markdown("## IPs with Related Accounts")
+            if not filtered_related_ips.empty:
+                show_ip_summary_table(filtered_related_ips, "IP Address", "Related Accounts", "Location")
+            else:
+                st.warning("No related IPs found.")
+
+            st.markdown("## Accounts Sharing Multiple IPs")
+            accounts_sharing_multiple_ips = build_accounts_sharing_multiple_ips(
+                filtered_related_login_accounts,
+                st.session_state.last_search_input
+            )
+
+            if not accounts_sharing_multiple_ips.empty:
+                st.dataframe(add_row_numbers(accounts_sharing_multiple_ips), use_container_width=True)
+            else:
+                st.warning("No other accounts sharing multiple IPs found.")
+
+            st.markdown("## Signup IP")
+            if not filtered_signup_ips.empty:
+                show_ip_summary_table(filtered_signup_ips, "Signup IP", "Related Accounts")
+            else:
+                st.warning("No signup IP found.")
+
+            st.markdown("## Login IPs without Relationships")
+            if not filtered_login_ips.empty:
+                st.dataframe(add_row_numbers(filtered_login_ips), use_container_width=True)
+            else:
+                st.warning("No login IPs without relationships found.")
+
+        else:
+            filtered_login_ip_accounts = st.session_state.filtered_login_ip_accounts
+            filtered_signup_accounts = st.session_state.filtered_signup_accounts
+
+            st.markdown("## Summary")
+            c1, c2 = st.columns(2)
+
+            with c1:
+                st.metric("Login IP Accounts", len(filtered_login_ip_accounts))
+            with c2:
+                st.metric("Signup IP Accounts", len(filtered_signup_accounts))
+
+            st.markdown("## Login IP Accounts")
+            if not filtered_login_ip_accounts.empty:
+                styled_df = add_row_numbers(filtered_login_ip_accounts).style.apply(highlight_risk_row, axis=1)
+                st.dataframe(styled_df, use_container_width=True)
+            else:
+                st.warning("No accounts found using this IP as Login IP.")
+
+            st.markdown("## Signup IP Accounts")
+            if not filtered_signup_accounts.empty:
+                styled_df = add_row_numbers(filtered_signup_accounts).style.apply(highlight_risk_row, axis=1)
+                st.dataframe(styled_df, use_container_width=True)
+            else:
+                st.warning("No accounts found using this IP as Signup IP.")
+
+
