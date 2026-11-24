@@ -228,7 +228,7 @@ def highlight_risk_row(row):
 
 def box_style(is_risk: bool) -> str:
     if is_risk:
-        return "background-color:#ffd9df !important; color:#7f1025 !important; font-weight:700; border:1px solid #d83b58; padding:8px; border-radius:4px; min-height:42px; display:flex; align-items:center; overflow-wrap:anywhere;"
+        return "background-color:#ffc4d1 !important; color:#741029 !important; font-weight:800; border:2px solid #ff315c; padding:8px; border-radius:4px; min-height:42px; display:flex; align-items:center; overflow-wrap:anywhere;"
     return "background-color:#ffffff !important; color:#24152f !important; font-weight:500; padding:8px; border-radius:4px; border:1px solid #ddd2e5; min-height:42px; display:flex; align-items:center; overflow-wrap:anywhere;"
 
 def show_account_table(df, risk_accounts=None, detail_spacing=False):
@@ -262,12 +262,14 @@ def show_account_table(df, risk_accounts=None, detail_spacing=False):
             # between entire rows without disrupting Streamlit column alignment.
             style += "margin-bottom:10px; min-height:48px; border-radius:7px; "
             if is_risk:
-                style += "background-color:#ffd9df !important; color:#7f1025 !important; border:2px solid #e04465 !important; box-shadow:0 0 0 1px rgba(224,68,101,0.15);"
+                style += "background-color:#ffc4d1 !important; color:#741029 !important; border:2px solid #ff315c !important; box-shadow:0 0 0 2px rgba(255,49,92,0.30);"
         row_cols = st.columns(widths)
         values = [idx] + [row[c] for c in columns]
         for col, value in zip(row_cols, values):
             safe_value = escape(str(value)) if pd.notna(value) else ""
-            col.markdown(f"<div style='{style}'>{safe_value}</div>", unsafe_allow_html=True)
+            if is_risk and col is row_cols[-1] and "Risk Account" in columns and columns[-1] == "Risk Account":
+                safe_value = '<span style="background:#9c1738;color:#fff !important;padding:4px 9px;border-radius:5px;font-weight:800;">HIGH RISK</span>'
+            col.markdown(f"<div style='{style}'><span style='color:{'#741029' if is_risk else '#24152f'} !important;'>{safe_value}</span></div>", unsafe_allow_html=True)
 
 def build_related_ips_summary(filtered_login_accounts):
     if filtered_login_accounts.empty:
