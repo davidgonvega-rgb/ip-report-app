@@ -40,34 +40,33 @@ else:
 st.markdown(f"""
 <style>
 .stApp {{
-    -color: #190723;
-    {_css}
-    -size: cover;
-    -position: center center;
-    -repeat: no-repeat;
-    -attachment: fixed;
+    background-color: #190723;
+    {background_css}
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
     color: white;
 }}
-[data-testid="stHeader"] {{ : transparent; }}
+[data-testid="stHeader"] {{ background: transparent; }}
 [data-testid="stSidebar"] {{
-    : rgba(32, 10, 48, 0.96);
+    background: rgba(32, 10, 48, 0.96);
     border-right: 1px solid rgba(255,255,255,0.15);
 }}
 [data-testid="stSidebar"] * {{ color: white; }}
 [data-testid="stMainBlockContainer"] {{
-    : rgba(25, 7, 39, 0.12);
+    background: rgba(25, 7, 39, 0.12);
     border-radius: 16px;
     padding-top: 5rem;
 }}
 .stApp h1, .stApp h2, .stApp h3, .stApp p, .stApp label {{ color: white; }}
 [data-testid="stMetric"] {{
-    : rgba(65, 24, 85, 0.85);
+    background: rgba(65, 24, 85, 0.85);
     padding: 12px;
     border-radius: 10px;
 }}
-.stButton > button {{ : #f7f2fb; color: #2a1039; border: 1px solid #e1cde8; }}
+.stButton > button {{ background: #f7f2fb; color: #2a1039; border: 1px solid #e1cde8; }}
 .stButton > button p {{ color: #2a1039 !important; }}
-/* Logo rendered by st.logo; no overlapping CSS overlay. */
 </style>
 """, unsafe_allow_html=True)
 
@@ -401,7 +400,7 @@ else:
         st.title("IP Report")
         st.subheader("Search by Account or IP")
 
-    # The BetAnything logo is already included in Background2.png.
+    # The BetAnything logo is loaded separately from BAS.logo.png.
 
     search_type = st.radio(
         "Search Type",
@@ -604,4 +603,3 @@ else:
                 st.dataframe(styled_df, use_container_width=True)
             else:
                 st.warning("No accounts found using this IP as Signup IP.")
-
