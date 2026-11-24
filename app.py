@@ -215,8 +215,8 @@ def highlight_risk_row(row):
 
 def box_style(is_risk: bool) -> str:
     if is_risk:
-        return "background-color:#f8d7da; padding:8px; border-radius:4px;"
-    return "background-color:#ffffff; padding:8px; border-radius:4px; border:1px solid #eee;"
+        return "background-color:#ffd9df !important; color:#7f1025 !important; font-weight:700; border:1px solid #d83b58; padding:8px; border-radius:4px; min-height:42px; display:flex; align-items:center; overflow-wrap:anywhere;"
+    return "background-color:#ffffff !important; color:#24152f !important; font-weight:500; padding:8px; border-radius:4px; border:1px solid #ddd2e5; min-height:42px; display:flex; align-items:center; overflow-wrap:anywhere;"
 
 def build_related_ips_summary(filtered_login_accounts):
     if filtered_login_accounts.empty:
@@ -260,6 +260,7 @@ def build_signup_ips_summary(filtered_signup_accounts):
     return grouped.sort_values("Signup IP").reset_index(drop=True)
 
 def show_ip_summary_table(df, ip_column, related_column, info_column=None, has_risk_column="Has Risk Account"):
+    st.caption("🔴 Filas rosadas: IP compartida con al menos una cuenta marcada como riesgo.")
     display_df = add_row_numbers(df)
 
     if info_column and info_column in display_df.columns:
