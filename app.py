@@ -383,36 +383,44 @@ if st.session_state.selected_ip is not None:
         st.metric("Risk Accounts", login_risk_count + signup_risk_count)
 
     st.markdown("## Logins")
-
     if not login_detail_df.empty:
-        login_detail_df = login_detail_df[
+        login_display = login_detail_df[
             ["Account", "Customer", "Last Login", "Risk Account"]
-        ]
-
-        styled_login_df = add_row_numbers(login_detail_df).style.apply(
-            highlight_risk_row,
-            axis=1
+        ].copy()
+        login_display["Risk Account"] = login_display["Risk Account"].map(
+            {True: "Yes", False: "No"}
         )
-        st.dataframe(styled_login_df, use_container_width=True)
+        st.caption("🔴 Pink rows: Accounts flagged as high risk in the prototype data.")
+        show_account_table(login_display, risk_accounts=set(
+            login_detail_df.loc[login_detail_df["Risk Account"], "Account"]
+        ))
     else:
-        st.warning("No login accounts found for this IP.")
+        st.markdown(
+            "<div style='background:rgba(65,24,85,0.85);color:#ffffff;"
+            "border:1px solid rgba(255,255,255,0.2);padding:12px 16px;"
+            "border-radius:6px;'>No login accounts found for this IP.</div>",
+            unsafe_allow_html=True,
+        )
 
     st.markdown("## Signup")
-
     if not signup_detail_df.empty:
-        signup_detail_df = signup_detail_df[
+        signup_display = signup_detail_df[
             ["Account", "Customer", "Created Date", "Risk Account"]
-        ]
-
-        styled_signup_df = add_row_numbers(signup_detail_df).style.apply(
-            highlight_risk_row,
-            axis=1
+        ].copy()
+        signup_display["Risk Account"] = signup_display["Risk Account"].map(
+            {True: "Yes", False: "No"}
         )
-        st.dataframe(styled_signup_df, use_container_width=True)
+        st.caption("🔴 Pink rows: Accounts flagged as high risk in the prototype data.")
+        show_account_table(signup_display, risk_accounts=set(
+            signup_detail_df.loc[signup_detail_df["Risk Account"], "Account"]
+        ))
     else:
-        st.warning("No signup accounts found for this IP.")
-
-    st.caption("Accounts highlighted in red are risk accounts.")
+        st.markdown(
+            "<div style='background:rgba(65,24,85,0.85);color:#ffffff;"
+            "border:1px solid rgba(255,255,255,0.2);padding:12px 16px;"
+            "border-radius:6px;'>No signup accounts found for this IP.</div>",
+            unsafe_allow_html=True,
+        )
 
     if st.button("Back to Search"):
         st.session_state.selected_ip = None
