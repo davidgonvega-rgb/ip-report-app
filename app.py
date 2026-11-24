@@ -24,18 +24,18 @@ background_css = (
     if background else
     'background-image: radial-gradient(ellipse at 15% 25%, #73115f 0%, #350742 48%, #160421 100%);'
 )
-# Load the logo as an actual Streamlit image rather than a CSS pseudo-element.
+# Load the transparent logo independently from the background.
 # Load the PNG through Pillow to ensure consistent rendering in Streamlit.
-logo_path = ASSET_DIR / "BAS.logo.png"
+logo_path = ASSET_DIR / "BASlogo2.png"
 if logo_path.is_file():
     try:
         with Image.open(logo_path) as source:
             logo_image = source.convert("RGBA")
         st.logo(logo_image, size="large")
     except Exception as exc:
-        st.warning(f"No se pudo abrir BAS.logo.png: {exc}")
+        st.warning(f"No se pudo abrir BASlogo2.png: {exc}")
 else:
-    st.warning("No se encontró BAS.logo.png junto a app.py. Revisa el nombre y la carpeta en GitHub.")
+    st.warning("No se encontró BASlogo2.png junto a app.py. Revisa el nombre y la carpeta en GitHub.")
 
 st.markdown(f"""
 <style>
@@ -400,7 +400,7 @@ else:
         st.title("IP Report")
         st.subheader("Search by Account or IP")
 
-    # The BetAnything logo is loaded separately from BAS.logo.png.
+    # The BetAnything logo is loaded separately from BASlogo2.png.
 
     search_type = st.radio(
         "Search Type",
