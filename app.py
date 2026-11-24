@@ -237,7 +237,13 @@ def show_account_table(df, risk_accounts=None):
     for idx, row in display_df.iterrows():
         account = str(row.get("Account", ""))
         risk_flag = row.get("Risk Account", False)
-        is_risk = (pd.notna(risk_flag) and bool(risk_flag)) or account in risk_accounts
+        # The detail view displays Yes/No strings. bool("No") is True in Python,
+        # so explicitly interpret the flag instead of using bool(risk_flag).
+        if isinstance(risk_flag, str):
+            flagged = risk_flag.strip().lower() in {"yes", "true", "1"}
+        else:
+            flagged = bool(risk_flag) if pd.notna(risk_flag) else False
+        is_risk = flagged or account in risk_accounts
         style = box_style(is_risk)
         row_cols = st.columns(widths)
         values = [idx] + [row[c] for c in columns]
