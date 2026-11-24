@@ -15,10 +15,10 @@ def asset_base64(filename):
     path = ASSET_DIR / filename
     return base64.b64encode(path.read_bytes()).decode("ascii") if path.is_file() else None
 
-background = asset_base64("Background.png")
+background = asset_base64("Background2.png")
 
 # The background preserves its aspect ratio. The independent logo never stretches.
-# For best results Background.png should contain ONLY the purple gradient.
+# For best results Background2.png should contain ONLY the purple gradient.
 background_css = (
     f'background-image: url("data:image/png;base64,{background}");'
     if background else
@@ -40,32 +40,32 @@ else:
 st.markdown(f"""
 <style>
 .stApp {{
-    background-color: #190723;
-    {background_css}
-    background-size: cover;
-    background-position: center center;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
+    -color: #190723;
+    {_css}
+    -size: cover;
+    -position: center center;
+    -repeat: no-repeat;
+    -attachment: fixed;
     color: white;
 }}
-[data-testid="stHeader"] {{ background: transparent; }}
+[data-testid="stHeader"] {{ : transparent; }}
 [data-testid="stSidebar"] {{
-    background: rgba(32, 10, 48, 0.96);
+    : rgba(32, 10, 48, 0.96);
     border-right: 1px solid rgba(255,255,255,0.15);
 }}
 [data-testid="stSidebar"] * {{ color: white; }}
 [data-testid="stMainBlockContainer"] {{
-    background: rgba(25, 7, 39, 0.12);
+    : rgba(25, 7, 39, 0.12);
     border-radius: 16px;
     padding-top: 5rem;
 }}
 .stApp h1, .stApp h2, .stApp h3, .stApp p, .stApp label {{ color: white; }}
 [data-testid="stMetric"] {{
-    background: rgba(65, 24, 85, 0.85);
+    : rgba(65, 24, 85, 0.85);
     padding: 12px;
     border-radius: 10px;
 }}
-.stButton > button {{ background: #f7f2fb; color: #2a1039; border: 1px solid #e1cde8; }}
+.stButton > button {{ : #f7f2fb; color: #2a1039; border: 1px solid #e1cde8; }}
 .stButton > button p {{ color: #2a1039 !important; }}
 /* Logo rendered by st.logo; no overlapping CSS overlay. */
 </style>
@@ -401,7 +401,7 @@ else:
         st.title("IP Report")
         st.subheader("Search by Account or IP")
 
-    # The BetAnything logo is already included in Background.png.
+    # The BetAnything logo is already included in Background2.png.
 
     search_type = st.radio(
         "Search Type",
