@@ -220,40 +220,30 @@ def box_style(is_risk: bool) -> str:
     return "background-color:#ffffff !important; color:#24152f !important; font-weight:500; padding:8px; border-radius:4px; border:1px solid #ddd2e5; min-height:42px; display:flex; align-items:center; overflow-wrap:anywhere;"
 
 def show_account_table(df, risk_accounts=None):
-    """Render a readable, consistent table over the dark background."""
+    """Display account/IP rows using the same Streamlit columns as IP summaries."""
     if df.empty:
         return
+
     risk_accounts = set(risk_accounts or [])
     display_df = add_row_numbers(df)
-    headers = ["#"] + [str(col) for col in display_df.columns]
-    css = """
-    <style>
-    .ip-account-table {width:100%; border-collapse:separate; border-spacing:0 8px; font-size:14px;}
-    .ip-account-table th {color:#fff !important; text-align:left; padding:8px 10px;}
-    .ip-account-table td {background:#fff !important; color:#24152f !important;
-        padding:12px 10px; border-top:1px solid #ddd2e5; border-bottom:1px solid #ddd2e5;
-        overflow-wrap:anywhere; vertical-align:middle;}
-    .ip-account-table tr.risk td {background:#ffd9df !important; color:#7f1025 !important;
-        font-weight:700; border-top:1px solid #d83b58; border-bottom:1px solid #d83b58;}
-    .ip-account-table td:first-child {border-left:1px solid #ddd2e5; border-radius:5px 0 0 5px;}
-    .ip-account-table td:last-child {border-right:1px solid #ddd2e5; border-radius:0 5px 5px 0;}
-    .ip-account-table tr.risk td:first-child {border-left-color:#d83b58;}
-    .ip-account-table tr.risk td:last-child {border-right-color:#d83b58;}
-    .ip-account-scroll {overflow-x:auto; width:100%;}
-    </style>
-    """
-    parts = [css, '<div class="ip-account-scroll"><table class="ip-account-table"><thead><tr>']
-    parts += [f'<th>{escape(h)}</th>' for h in headers]
-    parts.append('</tr></thead><tbody>')
+    columns = list(display_df.columns)
+    # The IP list can be long; give it extra space to remain readable.
+    widths = [0.7] + [4 if c == "Shared_IPs" else 2.3 if c in ("Customer", "Location", "Login IP") else 1.5 for c in columns]
+
+    header_cols = st.columns(widths)
+    for col, heading in zip(header_cols, ["#"] + columns):
+        col.markdown(f"**{escape(str(heading))}**")
+
     for idx, row in display_df.iterrows():
-        is_risk = bool(row.get("Risk Account", False)) or str(row.get("Account", "")) in risk_accounts
-        parts.append('<tr class="risk">' if is_risk else '<tr>')
-        parts.append(f'<td>{idx}</td>')
-        for value in row:
-            parts.append(f'<td>{escape(str(value)) if pd.notna(value) else ""}</td>')
-        parts.append('</tr>')
-    parts.append('</tbody></table></div>')
-    st.markdown(''.join(parts), unsafe_allow_html=True)
+        account = str(row.get("Account", ""))
+        risk_flag = row.get("Risk Account", False)
+        is_risk = (pd.notna(risk_flag) and bool(risk_flag)) or account in risk_accounts
+        style = box_style(is_risk)
+        row_cols = st.columns(widths)
+        values = [idx] + [row[c] for c in columns]
+        for col, value in zip(row_cols, values):
+            safe_value = escape(str(value)) if pd.notna(value) else ""
+            col.markdown(f"<div style='{style}'>{safe_value}</div>", unsafe_allow_html=True)
 
 def build_related_ips_summary(filtered_login_accounts):
     if filtered_login_accounts.empty:
