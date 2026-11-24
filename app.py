@@ -82,6 +82,18 @@ with st.sidebar:
     st.write("**Environment**")
     st.write("Mock Data / Demo Version 1.0")
 
+def show_empty_state(message: str):
+    """Readable, theme-independent empty result notice."""
+    st.markdown(
+        '<div style="background:rgba(65,24,85,0.88);'
+        'border:1px solid rgba(255,255,255,0.28);'
+        'border-radius:9px;padding:15px 18px;margin:10px 0 20px;'
+        'color:#ffffff !important;font-size:14px;line-height:1.5;">'
+        f'<span style="color:#ffffff !important;">{escape(message)}</span>'
+        '</div>',
+        unsafe_allow_html=True,
+    )
+
 # ---------------------------
 # SESSION STATE
 # ---------------------------
@@ -601,7 +613,7 @@ else:
             if not filtered_related_ips.empty:
                 show_ip_summary_table(filtered_related_ips, "IP Address", "Related Accounts", "Location")
             else:
-                st.warning("No related IPs found.")
+                show_empty_state("No related IPs found.")
 
             st.markdown("## Accounts Sharing Multiple IPs")
             accounts_sharing_multiple_ips = build_accounts_sharing_multiple_ips(
@@ -616,13 +628,13 @@ else:
                 st.caption("🔴 Pink rows: Accounts flagged as high risk in the prototype data.")
                 show_account_table(accounts_sharing_multiple_ips, risk_accounts)
             else:
-                st.warning("No other accounts sharing multiple IPs found.")
+                show_empty_state("No other accounts sharing multiple IPs found.")
 
             st.markdown("## Signup IP")
             if not filtered_signup_ips.empty:
                 show_ip_summary_table(filtered_signup_ips, "Signup IP", "Related Accounts")
             else:
-                st.warning("No signup IP found.")
+                show_empty_state("No signup IP found.")
 
             st.markdown("## Login IPs without Relationships")
             if not filtered_login_ips.empty:
@@ -632,7 +644,7 @@ else:
                 st.caption("🔴 Pink rows: Accounts flagged as high risk in the prototype data.")
                 show_account_table(filtered_login_ips, risk_accounts)
             else:
-                st.warning("No login IPs without relationships found.")
+                show_empty_state("No login IPs without relationships found.")
 
         else:
             filtered_login_ip_accounts = st.session_state.filtered_login_ip_accounts
@@ -651,11 +663,11 @@ else:
                 styled_df = add_row_numbers(filtered_login_ip_accounts).style.apply(highlight_risk_row, axis=1)
                 st.dataframe(styled_df, use_container_width=True)
             else:
-                st.warning("No accounts found using this IP as Login IP.")
+                show_empty_state("No accounts found using this IP as Login IP.")
 
             st.markdown("## Signup IP Accounts")
             if not filtered_signup_accounts.empty:
                 styled_df = add_row_numbers(filtered_signup_accounts).style.apply(highlight_risk_row, axis=1)
                 st.dataframe(styled_df, use_container_width=True)
             else:
-                st.warning("No accounts found using this IP as Signup IP.")
+                show_empty_state("No accounts found using this IP as Signup IP.")
