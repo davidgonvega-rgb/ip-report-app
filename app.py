@@ -34,9 +34,9 @@ if logo_path.is_file():
             logo_image = source.convert("RGBA")
         st.logo(logo_image, size="large")
     except Exception as exc:
-        st.warning(f"No se pudo abrir BASlogo2.png: {exc}")
+        st.warning(f"Unable to open BASlogo2.png: {exc}")
 else:
-    st.warning("No se encontró BASlogo2.png junto a app.py. Revisa el nombre y la carpeta en GitHub.")
+    st.warning("BASlogo2.png was not found next to app.py. Check the filename and its location in GitHub.")
 
 st.markdown(f"""
 <style>
@@ -287,7 +287,7 @@ def build_signup_ips_summary(filtered_signup_accounts):
     return grouped.sort_values("Signup IP").reset_index(drop=True)
 
 def show_ip_summary_table(df, ip_column, related_column, info_column=None, has_risk_column="Has Risk Account"):
-    st.caption("🔴 Filas rosadas: IP compartida con al menos una cuenta marcada como riesgo.")
+    st.caption("🔴 Pink rows: IP addresses shared with at least one account flagged as high risk.")
     display_df = add_row_numbers(df)
 
     if info_column and info_column in display_df.columns:
@@ -593,7 +593,7 @@ else:
                 risk_accounts = set(login_ip_accounts.loc[login_ip_accounts["Risk Account"], "Account"]) | set(
                     signup_ip_accounts.loc[signup_ip_accounts["Risk Account"], "Account"]
                 )
-                st.caption("🔴 Filas rosadas: cuentas marcadas como riesgo en los datos del prototipo.")
+                st.caption("🔴 Pink rows: Accounts flagged as high risk in the prototype data.")
                 show_account_table(accounts_sharing_multiple_ips, risk_accounts)
             else:
                 st.warning("No other accounts sharing multiple IPs found.")
@@ -609,7 +609,7 @@ else:
                 risk_accounts = set(login_ip_accounts.loc[login_ip_accounts["Risk Account"], "Account"]) | set(
                     signup_ip_accounts.loc[signup_ip_accounts["Risk Account"], "Account"]
                 )
-                st.caption("🔴 Filas rosadas: cuentas marcadas como riesgo en los datos del prototipo.")
+                st.caption("🔴 Pink rows: Accounts flagged as high risk in the prototype data.")
                 show_account_table(filtered_login_ips, risk_accounts)
             else:
                 st.warning("No login IPs without relationships found.")
