@@ -219,7 +219,7 @@ def box_style(is_risk: bool) -> str:
         return "background-color:#ffd9df !important; color:#7f1025 !important; font-weight:700; border:1px solid #d83b58; padding:8px; border-radius:4px; min-height:42px; display:flex; align-items:center; overflow-wrap:anywhere;"
     return "background-color:#ffffff !important; color:#24152f !important; font-weight:500; padding:8px; border-radius:4px; border:1px solid #ddd2e5; min-height:42px; display:flex; align-items:center; overflow-wrap:anywhere;"
 
-def show_account_table(df, risk_accounts=None):
+def show_account_table(df, risk_accounts=None, detail_spacing=False):
     """Display account/IP rows using the same Streamlit columns as IP summaries."""
     if df.empty:
         return
@@ -245,6 +245,12 @@ def show_account_table(df, risk_accounts=None):
             flagged = bool(risk_flag) if pd.notna(risk_flag) else False
         is_risk = flagged or account in risk_accounts
         style = box_style(is_risk)
+        if detail_spacing:
+            # Each cell receives the same bottom margin, creating a visible gap
+            # between entire rows without disrupting Streamlit column alignment.
+            style += "margin-bottom:10px; min-height:48px; border-radius:7px; "
+            if is_risk:
+                style += "background-color:#ffd9df !important; color:#7f1025 !important; border:2px solid #e04465 !important; box-shadow:0 0 0 1px rgba(224,68,101,0.15);"
         row_cols = st.columns(widths)
         values = [idx] + [row[c] for c in columns]
         for col, value in zip(row_cols, values):
@@ -399,7 +405,7 @@ if st.session_state.selected_ip is not None:
         st.caption("🔴 Pink rows: Accounts flagged as high risk in the prototype data.")
         show_account_table(login_display, risk_accounts=set(
             login_detail_df.loc[login_detail_df["Risk Account"], "Account"]
-        ))
+        ), detail_spacing=True)
     else:
         st.markdown(
             "<div style='background:rgba(65,24,85,0.85);color:#ffffff;"
@@ -419,7 +425,7 @@ if st.session_state.selected_ip is not None:
         st.caption("🔴 Pink rows: Accounts flagged as high risk in the prototype data.")
         show_account_table(signup_display, risk_accounts=set(
             signup_detail_df.loc[signup_detail_df["Risk Account"], "Account"]
-        ))
+        ), detail_spacing=True)
     else:
         st.markdown(
             "<div style='background:rgba(65,24,85,0.85);color:#ffffff;"
