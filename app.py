@@ -122,13 +122,13 @@ login_ip_accounts = pd.DataFrame({
     ],
     "Customer": [
         "Bad Bunny","Taylor Swift","Ariana Grande","Rihanna",
-        "Michael Jackson","Freddie Mercury","Prince","Madonna","Risk User 1",
+        "Michael Jackson","Freddie Mercury","Prince","Madonna","Bruno Mars",
         "Bad Bunny","Michael Jackson","Frank Sinatra","Johnny Cash",
         "Michael Jackson","Elton John","Bob Marley",
         "Bad Bunny","Michael Jackson","Jimi Hendrix","James Brown",
         "Michael Jackson","Bad Bunny","Eric Clapton",
         "Bad Bunny","Kendrick Lamar","David Bowie","Mick Jagger",
-        "Michael Jackson","Chris Cornell","Axl Rose","Risk User 2",
+        "Michael Jackson","Chris Cornell","Axl Rose","Justin Timberlake",
         "Bad Bunny","Bruce Dickinson","Paul McCartney","Roger Waters",
         "Michael Jackson","Lemmy","Ozzy Osbourne","Sebastian Bach","Geddy Lee"
     ],
@@ -192,7 +192,7 @@ login_ips_without_relationships = pd.DataFrame({
 
 signup_ip_accounts = pd.DataFrame({
     "Account": ["A20456","A10234","A30567","A40023","A40021","A99001","A51002","A80013","A94003","A94005"],
-    "Customer": ["Bad Bunny","Taylor Swift","Ariana Grande","Michael Jackson","Freddie Mercury","Risk User 1","Frank Sinatra","Stevie Wonder","Sebastian Bach","Steven Tyler"],
+    "Customer": ["Bad Bunny","Taylor Swift","Ariana Grande","Michael Jackson","Freddie Mercury","Bruno Mars","Frank Sinatra","Stevie Wonder","Sebastian Bach","Steven Tyler"],
     "Signup IP": ["563.111.111.10","563.111.111.10","563.111.111.10","563.111.111.20","563.111.111.20","563.111.111.20","563.111.111.30","563.111.111.40","563.111.111.50","563.111.111.50"],
     "Country": ["Perú","Ecuador","Honduras","Guatemala","México","Costa Rica","Chile","Rep Dominicana","Honduras","Perú"],
     "Risk Account": [False,False,False,False,False,True,True,True,True,False],
