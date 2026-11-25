@@ -3,7 +3,6 @@ import pandas as pd
 from datetime import date
 from pathlib import Path
 import base64
-from PIL import Image
 from html import escape
 
 st.set_page_config(page_title="IP Report", layout="wide", initial_sidebar_state="expanded")
@@ -16,7 +15,7 @@ def asset_base64(filename):
     path = ASSET_DIR / filename
     return base64.b64encode(path.read_bytes()).decode("ascii") if path.is_file() else None
 
-background = asset_base64("Background2.png")
+background = None
 
 # The background preserves its aspect ratio. The independent logo never stretches.
 # For best results Background2.png should contain ONLY the purple gradient.
@@ -25,19 +24,6 @@ background_css = (
     if background else
     'background-image: radial-gradient(ellipse at 15% 25%, #73115f 0%, #350742 48%, #160421 100%);'
 )
-# Load the transparent logo independently from the background.
-# Load the PNG through Pillow to ensure consistent rendering in Streamlit.
-logo_path = ASSET_DIR / "BASlogo2.png"
-if logo_path.is_file():
-    try:
-        with Image.open(logo_path) as source:
-            logo_image = source.convert("RGBA")
-        st.logo(logo_image, size="large")
-    except Exception as exc:
-        st.warning(f"Unable to open BASlogo2.png: {exc}")
-else:
-    st.warning("BASlogo2.png was not found next to app.py. Check the filename and its location in GitHub.")
-
 st.markdown(f"""
 <style>
 .stApp {{
@@ -229,7 +215,15 @@ def highlight_risk_row(row):
 def box_style(is_risk: bool) -> str:
     if is_risk:
         return "background-color:#ffc4d1 !important; color:#741029 !important; font-weight:800; border:2px solid #ff315c; padding:8px; border-radius:4px; min-height:42px; display:flex; align-items:center; overflow-wrap:anywhere;"
-    return "background-color:#ffffff !important; color:#24152f !important; font-weight:500; padding:8px; border-radius:4px; border:1px solid #ddd2e5; min-height:42px; display:flex; align-items:center; overflow-wrap:anywhere;"
+    return "background-color:transparent !important; color:#ffffff !important; font-weight:500; padding:8px; border-radius:4px; border:1px solid #ddd2e5; min-height:42px; display:flex; align-items:center; overflow-wrap:anywhere;"
+
+# Stable fictional financial values, independent of risk flags.
+all_accounts = sorted(set(login_ip_accounts["Account"]) | set(signup_ip_accounts["Account"]) | set(login_ips_without_relationships["Account"]))
+ltp_by_account = {account: (1 if i % 2 == 0 else -1) * (750 + i * 3721) for i, account in enumerate(all_accounts)}
+ltp_by_account.update({"A20456": 1560, "A40023": -265235, "A51002": 18450, "A51003": -8720})
+
+def format_ltp(value):
+    return f"${value:+,}" if value else "$0"
 
 def show_account_table(df, risk_accounts=None, detail_spacing=False):
     """Display account/IP rows using the same Streamlit columns as IP summaries."""
@@ -237,13 +231,16 @@ def show_account_table(df, risk_accounts=None, detail_spacing=False):
         return
 
     risk_accounts = set(risk_accounts or [])
-    display_df = add_row_numbers(df)
+    display_df = df.copy()
+    if "Account" in display_df.columns:
+        position = display_df.columns.get_loc("Customer") + 1 if "Customer" in display_df.columns else display_df.columns.get_loc("Account") + 1
+        display_df.insert(position, "LTP", display_df["Account"].map(ltp_by_account).map(format_ltp))
     columns = list(display_df.columns)
     # The IP list can be long; give it extra space to remain readable.
-    widths = [0.7] + [4 if c == "Shared_IPs" else 2.3 if c in ("Customer", "Location", "Login IP") else 1.5 for c in columns]
+    widths = [4 if c == "Shared_IPs" else 2.3 if c in ("Customer", "Location", "Login IP") else 1.5 for c in columns]
 
     header_cols = st.columns(widths)
-    for col, heading in zip(header_cols, ["#"] + columns):
+    for col, heading in zip(header_cols, columns):
         col.markdown(f"**{escape(str(heading))}**")
 
     for idx, row in display_df.iterrows():
@@ -264,12 +261,12 @@ def show_account_table(df, risk_accounts=None, detail_spacing=False):
             if is_risk:
                 style += "background-color:#ffc4d1 !important; color:#741029 !important; border:2px solid #ff315c !important; box-shadow:0 0 0 2px rgba(255,49,92,0.30);"
         row_cols = st.columns(widths)
-        values = [idx] + [row[c] for c in columns]
+        values = [row[c] for c in columns]
         for col, value in zip(row_cols, values):
             safe_value = escape(str(value)) if pd.notna(value) else ""
             if is_risk and col is row_cols[-1] and "Risk Account" in columns and columns[-1] == "Risk Account":
                 safe_value = '<span style="background:#9c1738;color:#fff !important;padding:4px 9px;border-radius:5px;font-weight:800;">HIGH RISK</span>'
-            col.markdown(f"<div style='{style}'><span style='color:{'#741029' if is_risk else '#24152f'} !important;'>{safe_value}</span></div>", unsafe_allow_html=True)
+            col.markdown(f"<div style='{style}'><span style='color:{'#741029' if is_risk else '#ffffff'} !important;'>{safe_value}</span></div>", unsafe_allow_html=True)
 
 def build_related_ips_summary(filtered_login_accounts):
     if filtered_login_accounts.empty:
@@ -462,7 +459,7 @@ else:
         st.title("IP Report")
         st.subheader("Search by Account or IP")
 
-    # The BetAnything logo is loaded separately from BASlogo2.png.
+
 
     search_type = st.radio(
         "Search Type",
@@ -662,14 +659,12 @@ else:
 
             st.markdown("## Login IP Accounts")
             if not filtered_login_ip_accounts.empty:
-                styled_df = add_row_numbers(filtered_login_ip_accounts).style.apply(highlight_risk_row, axis=1)
-                st.dataframe(styled_df, use_container_width=True)
+                show_account_table(filtered_login_ip_accounts, detail_spacing=True)
             else:
                 show_empty_state("No accounts found using this IP as Login IP.")
 
             st.markdown("## Signup IP Accounts")
             if not filtered_signup_accounts.empty:
-                styled_df = add_row_numbers(filtered_signup_accounts).style.apply(highlight_risk_row, axis=1)
-                st.dataframe(styled_df, use_container_width=True)
+                show_account_table(filtered_signup_accounts, detail_spacing=True)
             else:
                 show_empty_state("No accounts found using this IP as Signup IP.")
