@@ -6,7 +6,7 @@ import base64
 from PIL import Image
 from html import escape
 
-st.set_page_config(page_title="IP Report", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="Intelligence Tool", layout="wide", initial_sidebar_state="expanded")
 
 # Assets are read from the repository directory.
 ASSET_DIR = Path(__file__).resolve().parent
@@ -71,17 +71,68 @@ st.markdown(f"""
 </style>
 """, unsafe_allow_html=True)
 
+# Application navigation (local demonstration only).
+if "active_module" not in st.session_state:
+    st.session_state.active_module = "home"
+
+def navigate(module):
+    st.session_state.active_module = module
+    st.rerun()
+
 with st.sidebar:
-    st.title("IP Intelligence Tool")
+    st.title("Intelligence Tool")
     st.caption("Prototype")
     st.divider()
-    st.write("**Search Modes**")
-    st.write("- By Account")
-    st.write("- By IP")
+    if st.session_state.active_module != "home":
+        if st.button("← Back to Intelligence Tool", key="nav_home_sidebar", use_container_width=True):
+            navigate("home")
+    if st.session_state.active_module == "ip_report":
+        st.write("**IP Report**")
+        st.write("**Search Modes**")
+        st.write("- By Account")
+        st.write("- By IP")
+    elif st.session_state.active_module == "avs":
+        st.write("**Account Validation System**")
+        st.caption("Under Development")
+    else:
+        st.write("**Applications**")
+        st.write("- IP Report")
+        st.write("- AVS")
     st.divider()
     st.write("**Environment**")
     st.write("Mock Data / Demo Version 1.0")
     st.caption("Synthetic records only. No external connections.")
+
+if st.session_state.active_module == "home":
+    st.markdown("""<style>
+    .module-card {background:rgba(65,24,85,.82);border:1px solid rgba(255,255,255,.28);border-radius:16px;padding:28px;min-height:180px;margin-bottom:12px;}
+    .module-card h2,.module-card p {color:white !important;}
+    </style>""", unsafe_allow_html=True)
+    st.title("Intelligence Tool")
+    st.subheader("Select an application to continue")
+    st.write("")
+    left, right = st.columns(2, gap="large")
+    with left:
+        st.markdown('<div class="module-card"><h2>IP Report</h2><p>IP address and account relationship analysis</p><p>Demo available</p></div>', unsafe_allow_html=True)
+        if st.button("Open IP Report", key="open_ip_report", use_container_width=True):
+            navigate("ip_report")
+    with right:
+        st.markdown('<div class="module-card"><h2>AVS</h2><p>Account Validation System</p><p>Under Development</p></div>', unsafe_allow_html=True)
+        if st.button("Open AVS", key="open_avs", use_container_width=True):
+            navigate("avs")
+    st.caption("Mock Data / Demo Environment")
+    st.stop()
+
+if st.session_state.active_module == "avs":
+    st.title("AVS")
+    st.subheader("Account Validation System")
+    st.info("Under Development — This application is not yet available.")
+    if st.button("← Back to Intelligence Tool", key="avs_back"):
+        navigate("home")
+    st.stop()
+
+if st.button("← Back to Intelligence Tool", key="ip_back"):
+    navigate("home")
 
 def show_empty_state(message: str):
     """Readable, theme-independent empty result notice."""
