@@ -127,6 +127,13 @@ if st.session_state.active_module == "avs":
     st.title("AVS")
     st.subheader("Account Validation System")
     st.info("Under Development — This application is not yet available.")
+    st.markdown(
+        "The Account Validation System (AVS) will be designed to automate the validation "
+        "of both new signups and existing accounts, enabling faster and more effective "
+        "identification of duplicate and related accounts.\n\n"
+        "The tool aims to streamline the account validation process, reduce manual reviews, "
+        "and improve operational efficiency through automated analysis."
+    )
     if st.button("← Back to Intelligence Tool", key="avs_back"):
         navigate("home")
     st.stop()
